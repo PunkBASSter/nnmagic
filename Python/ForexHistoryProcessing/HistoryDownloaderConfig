@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config>
+    <hostUrl url="http://www.histdata.com"/>
+    <symbolPageUrl url="/download-free-forex-historical-data/?/ascii/1-minute-bar-quotes/"/>
+    <csvRequestUrl url="/get.php"/>
+    <symbols>
+        <symbol name="EURUSD"/>
+        <symbol name="USDCHF"/>
+    </symbols>
+    <downloadPath path="C:/FxHistoryDownloads/"/>
+    <pauseBetweenRequests time="5000"/>
+</config>

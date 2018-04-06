@@ -5,7 +5,7 @@ class Normalizer:
     """Input sequences must be sorted by timestamp ascending"""
     _params = None
 
-    def __init__(self, params):
+    def __init__(self, params=None):
         self._params = params
 
 class Parameters:

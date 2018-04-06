@@ -1,5 +1,3 @@
-import Common.ModelParameters
-
 import math
 from matplotlib import pyplot as plt
 import numpy as np
@@ -10,11 +8,25 @@ import time
 import cntk as C
 import cntk.tests.test_utils
 from cntk.ops.functions import load_model
+
+import Normalizers.DiffRatioNormalization as nrm
+from Common.ModelParameters import ModelParameters
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
-isFast = False
-train = False
-model_file_name = "myEzLstm.cmf"
+
+#Load and prepare Data
+params = ModelParameters()
+df = pd.read_csv(params.io_input_data_file, index_col="Timestamp")
+df.sort_index()
+
+#Normalize
+norm_data, scaling_k = nrm.normalize(df)
+df["Normalized"] = pd.Series(norm_data, df.index)
+
+#Denormalization example
+#predicted_data = nrm.denormalize(df, scaling_k)
+#df["Predicted"] = pd.Series(predicted_data, df.index)
+#df.to_csv(params.io_predictions_data_file)
 
 
 def split_data(data, val_size=0.1, test_size=0.2):
