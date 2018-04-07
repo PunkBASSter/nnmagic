@@ -10,63 +10,37 @@ import cntk.tests.test_utils
 from cntk.ops.functions import load_model
 
 import Normalizers.DiffRatioNormalization as nrm
+import HelperFunctions.DataFrameHelperFunctions as dfhf
 from Common.ModelParameters import ModelParameters
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 
-#Load and prepare Data
+print("Loading and preparing raw data.")
 params = ModelParameters()
 df = pd.read_csv(params.io_input_data_file, index_col="Timestamp")
 df.sort_index()
 
-#Normalize
-norm_data, scaling_k = nrm.normalize(df)
-df["Normalized"] = pd.Series(norm_data, df.index)
-
+print("Normalizing data and adding to DataFrame.")
+norm_list, scaling_k = nrm.normalize(df)
+df["Normalized"] = pd.Series(norm_list, df.index)
 #Denormalization example
 #predicted_data = nrm.denormalize(df, scaling_k)
 #df["Predicted"] = pd.Series(predicted_data, df.index)
 #df.to_csv(params.io_predictions_data_file)
 
+N = params.pred_N
+M = params.pred_M
 
-def split_data(data, val_size=0.1, test_size=0.2):
-    pos_test = int(len(data) * (1 - test_size))
-    pos_val = int(len(data[:pos_test]) * (1 - val_size))
+print("Splitting DataFrame to Train/Validation/Test samples.")
+df_train, df_val, df_test = dfhf.split_df_by_size(df, params.size_validation, params.size_test)
 
-    train, val, test = data[:pos_val], data[pos_val:pos_test], data[pos_test:]
+print("Transforming normalized data from splitted samples to collections with LSTM NN-compatible structure.")
+train_X, train_Y = dfhf.generate_data_by_df(df_train, N, M)
+val_X, val_Y = dfhf.generate_data_by_df(df_val, N, M)
+test_X, test_Y = dfhf.generate_data_by_df(df_test, N, M)
 
-    return {"train": train, "val": val, "test": test}
-
-
-def generate_data(data, time_steps, time_shift):
-    if not isinstance(data, pd.DataFrame):
-        data = pd.DataFrame(dict(a=data[0:len(data) - time_shift], b=data[time_shift:]))
-    rnn_x = []
-    for i in range(len(data) - time_steps + 1):
-        rnn_x.append(data['a'].iloc[i: i + time_steps].as_matrix())
-    rnn_x = np.array(rnn_x)
-
-    # Reshape or rearrange the data from row to columns
-    # to be compatible with the input needed by the LSTM model
-    # which expects 1 float per time point in a given batch
-    rnn_x = rnn_x.reshape(rnn_x.shape + (1,))
-
-    rnn_y = data['b'].values
-    rnn_y = rnn_y[time_steps - 1:]
-
-    # Reshape or rearrange the data from row to columns
-    # to match the input shape
-    rnn_y = rnn_y.reshape(rnn_y.shape + (1,))
-
-    return split_data(rnn_x), split_data(rnn_y)
-
-
-N = 25 # input: N subsequent values
-M = 1 # output: predict 1 value M steps ahead
-
-normalized = pd.read_csv("data\\Normalized_DzzExportEURUSD.mPERIOD_H1.csv",
-                  usecols=["ValueDiffRatio_LogWithMaxAbsBase"], dtype=np.float32).as_matrix().transpose()[0]
-X, Y = generate_data(normalized, N, M)
+X = {"train": train_X, "val": val_X, "test": test_X}
+Y = {"train": train_Y, "val": val_Y, "test": test_Y}
 
 
 def create_model(x):

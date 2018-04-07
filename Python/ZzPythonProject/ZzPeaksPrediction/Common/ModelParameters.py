@@ -12,6 +12,10 @@ class ModelParameters:
     io_predictions_data_file = io_folder + "Denormalized_" + io_file_name_base + io_data_file_ext
     io_trained_model_file = io_folder + "Trained_Model_" + io_file_name_base + ".cmf"
 
+    #Sample size parameters
+    size_test = 0.2
+    size_validation = 0.1
+
     #Prediction settings
     pred_N = 25  # input: N subsequent values
     pred_M = 1  # output: predict 1 value M steps ahead
