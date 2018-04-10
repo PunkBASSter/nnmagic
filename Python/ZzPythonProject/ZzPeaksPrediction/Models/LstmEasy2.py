@@ -11,6 +11,7 @@ from cntk.ops.functions import load_model
 
 import Normalizers.DiffRatioNormalization as nrm
 import HelperFunctions.DataFrameHelperFunctions as dfhf
+import HelperFunctions.ListDataHelperFunctions as ldhf
 from Common.ModelParameters import ModelParameters
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
@@ -26,12 +27,8 @@ df = pd.read_csv(params.io_input_data_file, index_col="Timestamp")
 df.sort_index()
 
 print("Normalizing data and adding to DataFrame.")
-norm_list, scaling_k = nrm.normalize(df)
+norm_list, scaling_k = nrm.normalize(df, add_padding=True)
 df[normalized_column] = pd.Series(norm_list, df.index)
-#Denormalization example
-#predicted_data = nrm.denormalize(df, scaling_k)
-#df["Predicted"] = pd.Series(predicted_data, df.index)
-#df.to_csv(params.io_predictions_data_file)
 
 N = params.pred_N
 M = params.pred_M
@@ -97,7 +94,6 @@ learner = C.fsadagrad(z.parameters,
 
 trainer = C.Trainer(z, (loss, error), [learner])
 
-
 # train
 if train:
     loss_summary = []
@@ -152,34 +148,19 @@ for j, ds in enumerate(["train", "val", "test"]):
 #    test_results.extend(pred[:, 0])
 
 df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(df_test, results["test"], N)
-denormalized_predictions = nrm.denormalize(df_test_with_predictions, scaling_k, predicted_column)
+denormalized_predictions = nrm.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
+
+df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
+df_test_with_predictions.to_csv(params.io_predictions_data_file)
 
 
-predictedTest = []
-
-
-
-#Fun with plots
+#original_values = df_test_with_predictions["Value"].tolist()[2:]
+#
 #fig = plt.figure()
-#ax0 = fig.add_subplot(311)
-#ax0.plot(rdat, label = 'Actual')
-#ax0.plot(predictedTest, label = 'Predicted')
+#ax0 = fig.add_subplot(111)
+#ax0.plot(original_values, label='Actual')
+#ax0.plot(denormalized_predictions, label='Predicted')
 #ax0.grid(True)
-#
-#diff = []
-#for p in range(0, len(predictedTest)):
-#    diff.append(math.fabs(predictedTest[p]) - math.fabs(rdat[p]))
-#
-#import TradeEmulator as te
-#balance, trades = te.emulate_trading_on_series(N, rdat, predictedTest)
-#
-#ax2 = fig.add_subplot(312)
-#ax2.plot(balance)
-#ax2.grid(True)
-#ax3 = fig.add_subplot(313)
-#ax3.plot(trades)
-#ax3.grid(True)
-#
 #plt.show()
 
 
