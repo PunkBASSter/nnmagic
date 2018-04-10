@@ -2,13 +2,31 @@ import pandas as pd
 import numpy as np
 
 df_normalized_column = "Normalized"
+df_predicted_column = "Predicted"
 
-def split_df_by_number(dataframe, val_start, test_start, N = 25, M = 1):
+
+def add_list_to_source_df_padding_overlapping(dataframe, lst, N):
+    """As the DFs are splitted with overlapping and results array differ in length, we put N padded elements
+    before predicted to fill the gap impeding DF creation."""
+    padding = dataframe[df_normalized_column].tolist()[0:N]
+    padded_lst = padding
+    padded_lst.extend(lst)
+
+    dataframe[df_predicted_column] = pd.Series(padded_lst, dataframe.index)
+
+    actual_predicted_start_timestamp = dataframe.index[N]
+
+    return dataframe, actual_predicted_start_timestamp
+
+
+
+def split_df_by_number(dataframe, val_start, test_start, N, M):
     """Consumes DataFrame with Timestamp as Index column and returns
-     3 DataFrames corresponding to Train, Validation, Test samples respectively."""
+     3 DataFrames corresponding to Train, Validation, Test samples respectively.
+     Training DF is returned starting from index 2."""
 
-    total = dataframe.count()
-    train = dataframe.iloc[0:val_start]
+    total = len(dataframe.index)
+    train = dataframe.iloc[2:val_start]
     validation = dataframe.iloc[val_start-N:test_start]
     test = dataframe.iloc[test_start-N:total]
 
@@ -17,7 +35,7 @@ def split_df_by_number(dataframe, val_start, test_start, N = 25, M = 1):
 
 def split_df_by_size(dataframe, val_size=0.1, test_size=0.2, N = 25, M = 1):
 
-    total = dataframe.count()
+    total = len(dataframe.index)
     pos_test = int(total * (1 - test_size))
     pos_val = int(pos_test * (1 - val_size))
 

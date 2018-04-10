@@ -16,7 +16,9 @@ cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build 
 
 
 #settings
-train = True
+train = False
+normalized_column = "Normalized"
+predicted_column = "Predicted"
 
 print("Loading and preparing raw data.")
 params = ModelParameters()
@@ -25,7 +27,7 @@ df.sort_index()
 
 print("Normalizing data and adding to DataFrame.")
 norm_list, scaling_k = nrm.normalize(df)
-df["Normalized"] = pd.Series(norm_list, df.index)
+df[normalized_column] = pd.Series(norm_list, df.index)
 #Denormalization example
 #predicted_data = nrm.denormalize(df, scaling_k)
 #df["Predicted"] = pd.Series(predicted_data, df.index)
@@ -35,7 +37,7 @@ N = params.pred_N
 M = params.pred_M
 
 print("Splitting DataFrame to Train/Validation/Test samples.")
-df_train, df_val, df_test = dfhf.split_df_by_size(df, params.size_validation, params.size_test)
+df_train, df_val, df_test = dfhf.split_df_by_size(df, params.size_validation, params.size_test, N, M)
 
 print("Transforming normalized data from splitted samples to collections with LSTM NN-compatible structure.")
 train_X, train_Y = dfhf.generate_data_by_df(df_train, N, M)
@@ -48,7 +50,7 @@ Y = {"train": train_Y, "val": val_Y, "test": test_Y}
 
 def create_model(x):
     """Create the model for time series prediction"""
-    with C.layers.default_options(initial_state = 0.1):
+    with C.layers.default_options(initial_state=0.1):
         m = C.layers.Recurrence(C.layers.LSTM(N))(x)
         m = C.sequence.last(m)
         m = C.layers.Dropout(0.2, seed=1)(m)
@@ -70,9 +72,9 @@ def next_batch(x, y, ds):
 
 
 # Training parameters
-TRAINING_STEPS = 10000
-BATCH_SIZE = 100
-EPOCHS = 100
+TRAINING_STEPS = params.learn_training_steps
+BATCH_SIZE = params.learn_batch_size
+EPOCHS = params.learn_epochs
 
 
 # input sequences
@@ -89,9 +91,9 @@ error = C.squared_error(z, l)
 
 momentum_schedule = C.momentum_schedule(0.9, minibatch_size=BATCH_SIZE)
 learner = C.fsadagrad(z.parameters,
-                      lr = lr_schedule,
-                      momentum = momentum_schedule,
-                      unit_gain = True)
+                      lr=lr_schedule,
+                      momentum=momentum_schedule,
+                      unit_gain=True)
 
 trainer = C.Trainer(z, (loss, error), [learner])
 
@@ -127,80 +129,58 @@ def get_mse(X,Y,labeltxt):
 
 
 # Print the train and validation errors
-for labeltxt in ["train", "val"]:
+for labeltxt in ["train", "val", "test"]:
     print("mse for {}: {:.6f}".format(labeltxt, get_mse(X, Y, labeltxt)))
 
 
-# Print validate and test error
-labeltxt = "test"
-print("mse for {}: {:.6f}".format(labeltxt, get_mse(X, Y, labeltxt)))
-
-
 #predict
-f, a = plt.subplots(3, 1, figsize = (12, 8))
+f, a = plt.subplots(3, 1, figsize=(12, 8))
+results = {"train": [], "val": [], "test": []}
 for j, ds in enumerate(["train", "val", "test"]):
-    results = []
-    for x1, y1 in next_batch(X, Y, ds):
-        #pred = z.eval({x: x1})
+    for x1 in X[ds]:
         pred = z.eval({z.arguments[0]: x1})
-        results.extend(pred[:, 0])
-    a[j].plot(Y[ds], label = ds + ' raw')
-    a[j].plot(results, label = ds + ' predicted')
+        results[ds].extend(pred[:, 0])
+    a[j].plot(Y[ds], label=ds + ' raw')
+    a[j].plot(results[ds], label=ds + ' predicted')
 [i.legend() for i in a]
+#plt.show()
 
+##Illustrations
+#test_results = []
+#for x1 in X["test"]:
+#    pred = z.eval({z.arguments[0]: x1})
+#    test_results.extend(pred[:, 0])
 
-#Illustrations
-results = []
-for x1, y1 in next_batch(X, Y, "test"):
-    pred = z.eval({z.arguments[0]: x1})
-    results.extend(pred[:, 0])
+df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(df_test, results["test"], N)
+denormalized_predictions = nrm.denormalize(df_test_with_predictions, scaling_k, predicted_column)
 
 
 predictedTest = []
-import DataPreProcessing as dpp
-
-rdat = test_X["Value"]
-predictedTest.append(rdat[0])
-for r in range(1, len(results)):
-    val = dpp.calculateNextPeak(rdat[r-1], rdat[r], results[r])
-    predictedTest.append(val)
-
-pos_test = len(Y["train"])+len(Y["val"]) + 2
-full_input_data = pd.read_csv("data\\Normalized_DzzExportEURUSD.mPERIOD_H1.csv")
-time = full_input_data["Timestamp"].values.tolist()
-time = time[pos_test:pos_test+len(predictedTest)]
-#d = pd.DataFrame(dict(Timestamp=time,Predicted=predictedTest,Actual=rdat))
-#Write output
-lines = [] #["Timestamp,Value,TimeDiffRatio,ValueDiffRatio,ValueDiffRatio_LogWithMaxAbsBase\n"]
-for i in range(0, len(time)):
-    lines.append(str(time[i])+","+str(predictedTest[i])+","+str(rdat[i])+'\n')
-fh = open("data\\"+"Predictions_DzzExportEURUSD.mPERIOD_H1.csv", 'wt')
-fh.writelines(lines)
 
 
 
 #Fun with plots
-fig = plt.figure()
-ax0 = fig.add_subplot(311)
-ax0.plot(rdat, label = 'Actual')
-ax0.plot(predictedTest, label = 'Predicted')
-ax0.grid(True)
-
-diff = []
-for p in range(0, len(predictedTest)):
-    diff.append(math.fabs(predictedTest[p]) - math.fabs(rdat[p]))
-
-import TradeEmulator as te
-balance, trades = te.emulate_trading_on_series(N, rdat, predictedTest)
-
-ax2 = fig.add_subplot(312)
-ax2.plot(balance)
-ax2.grid(True)
-ax3 = fig.add_subplot(313)
-ax3.plot(trades)
-ax3.grid(True)
-
-plt.show()
+#fig = plt.figure()
+#ax0 = fig.add_subplot(311)
+#ax0.plot(rdat, label = 'Actual')
+#ax0.plot(predictedTest, label = 'Predicted')
+#ax0.grid(True)
+#
+#diff = []
+#for p in range(0, len(predictedTest)):
+#    diff.append(math.fabs(predictedTest[p]) - math.fabs(rdat[p]))
+#
+#import TradeEmulator as te
+#balance, trades = te.emulate_trading_on_series(N, rdat, predictedTest)
+#
+#ax2 = fig.add_subplot(312)
+#ax2.plot(balance)
+#ax2.grid(True)
+#ax3 = fig.add_subplot(313)
+#ax3.plot(trades)
+#ax3.grid(True)
+#
+#plt.show()
 
 
 #todo reconsider loss calculation

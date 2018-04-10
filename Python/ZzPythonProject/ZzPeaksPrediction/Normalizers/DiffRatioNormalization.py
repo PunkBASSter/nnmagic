@@ -39,11 +39,11 @@ def normalize(dataframe):
     return scaled_normalized_ltd, limit
 
 
-def denormalize(dataframe, scaling_k):
+def denormalize(dataframe, scaling_k, col_name = 'Normalized'):
     """Consumes a DataFrame having Values and Vormalized columns; normalization scaling multipler;
      Returns predicted next peak values."""
     zz_values = dataframe['Value'].tolist()
-    normalized_list = dataframe['Normalized'].tolist()
+    normalized_list = dataframe[col_name].tolist()
 
     nrm = DiffRatioNormalizer()
     descaled_normalized = ldhf.scale_data(normalized_list, 1 / scaling_k)
@@ -68,7 +68,7 @@ def denormalize(dataframe, scaling_k):
 #df.to_csv(params.io_predictions_data_file)
 
 
-def draw_data_plots():
+def draw_data_plots(norm_data):
     fig = plt.figure()
     ax0 = fig.add_subplot(211)
     ax0.plot(norm_data)
@@ -83,7 +83,7 @@ def draw_data_plots():
     #ax4.hist(abs_normalized_list, 500, normed=False, facecolor='g', alpha=0.75)
     #ax4.grid(True)
     plt.show()
-#draw_data_plots()
+#draw_data_plots(norm_data)
 
 print("Data Normalization completed.")
 
