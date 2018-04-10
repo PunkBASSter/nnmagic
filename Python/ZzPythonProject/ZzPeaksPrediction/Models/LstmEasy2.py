@@ -15,6 +15,9 @@ from Common.ModelParameters import ModelParameters
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 
+#settings
+train = True
+
 print("Loading and preparing raw data.")
 params = ModelParameters()
 df = pd.read_csv(params.io_input_data_file, index_col="Timestamp")
@@ -69,7 +72,7 @@ def next_batch(x, y, ds):
 # Training parameters
 TRAINING_STEPS = 10000
 BATCH_SIZE = 100
-EPOCHS = 10 if isFast else 200
+EPOCHS = 100
 
 
 # input sequences
@@ -109,9 +112,9 @@ if train:
 
     # A look how the loss function shows how well the model is converging
     plt.plot(loss_summary, label='training loss')
-    z.save(model_file_name)
+    z.save(params.io_trained_model_file)
 else:
-    z = load_model(model_file_name)
+    z = load_model(params.io_trained_model_file)
 
 
 # validate
@@ -156,9 +159,7 @@ for x1, y1 in next_batch(X, Y, "test"):
 predictedTest = []
 import DataPreProcessing as dpp
 
-rawData = pd.read_csv("data\\Normalized_DzzExportEURUSD.mPERIOD_H1.csv",usecols=["Value"], dtype=np.float32).as_matrix().transpose()[0]
-rawSplitted = split_data(rawData)
-rdat = rawSplitted["test"]
+rdat = test_X["Value"]
 predictedTest.append(rdat[0])
 for r in range(1, len(results)):
     val = dpp.calculateNextPeak(rdat[r-1], rdat[r], results[r])
