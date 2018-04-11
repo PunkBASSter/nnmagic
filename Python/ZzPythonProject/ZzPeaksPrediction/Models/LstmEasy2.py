@@ -149,9 +149,19 @@ for j, ds in enumerate(["train", "val", "test"]):
 
 df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(df_test, results["test"], N)
 denormalized_predictions = nrm.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
-
 df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
 df_test_with_predictions.to_csv(params.io_predictions_data_file)
+
+#Predictions.csv #KOSTYL'
+timestamps = df_test_with_predictions.index.tolist()[27:]
+predicted = df_test_with_predictions["Restored"].tolist()[27:]
+values = df_test_with_predictions["Value"].tolist()[27:]
+lines = []
+for i in range(0, len(timestamps)):
+    lines.append(str(timestamps[i])+","+str(predicted[i])+","+str(values[i])+'\n')
+file = open(params.io_folder+"Predictions.csv", 'wt')
+file.writelines(lines)
+
 
 
 #original_values = df_test_with_predictions["Value"].tolist()[2:]
