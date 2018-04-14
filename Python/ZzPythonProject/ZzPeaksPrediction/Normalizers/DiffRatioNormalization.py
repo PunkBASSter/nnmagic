@@ -18,21 +18,7 @@ def normalize(dataframe, add_padding=False):
 
     nrm = DiffRatioNormalizer()
     normalized_list = nrm.calculate_norms(zz_values)
-    #denormalized_back = nrm.calculate_peaks(zz_values, normalized_list) #without first two values
 
-    #diff = []
-    #for i in range(0, len(denormalized_back)):
-    #    diff.append(value[i+2] - denormalized_back[i])
-    #total_err = sum(diff)
-
-    #Logarithm_transformation:
-    #ltr = LogTransformer()
-    #strait_log = ltr.calc_logs(normalized_list)
-    #reverse_log = ltr.calc_exps(strait_log)
-    #ldiff = []
-    #for i in range(0, len(normalized_list_log)):
-    #    ldiff.append(normalized_list[i] - normalized_list_exp_back[i])
-    #total_log_err = sum(ldiff)
     abs_normalized_list = ldhf.calc_abs(normalized_list)
     limit = np.percentile(abs_normalized_list, 90) #Clipping abs values greater than 90 percentile.
     limited_amp_normalized_list = ldhf.limit_by_amp(normalized_list, limit)
@@ -86,14 +72,8 @@ def draw_data_plots(norm_data):
     ax2 = fig.add_subplot(212)
     ax2.hist(norm_data, 500, normed=False, facecolor='g', alpha=0.75)
     ax2.grid(True)
-    #ax3 = fig.add_subplot(413)
-    #ax3.plot(abs_normalized_list)
-    #ax3.grid(True)
-    #ax4 = fig.add_subplot(414)
-    #ax4.hist(abs_normalized_list, 500, normed=False, facecolor='g', alpha=0.75)
-    #ax4.grid(True)
+
     plt.show()
-#draw_data_plots(norm_data)
 
 print("Data Normalization completed.")
 

@@ -3,7 +3,7 @@ from cntk.ops.functions import load_model
 from eve import Eve
 from flask import request
 
-from Normalizers.LogTransformer import DiffRatioLogNormalizerParameters, DiffRatioLogNormalizer
+from Normalizers.DiffRatioNormalization import DiffRatioNormalizer
 
 app = Eve()
 model_nn = 0
@@ -20,7 +20,7 @@ def forecast():
     req = request.get_json()
     data = req['data']
 
-    normalizer = DiffRatioLogNormalizer(DiffRatioLogNormalizerParameters(len(data))) #25+2
+    normalizer = DiffRatioNormalizer(DiffRatioLogNormalizerParameters(len(data))) #25+2
     normalized_data = normalizer.normalize(data)
 
     transformed_normalized_data = np.asarray(normalized_data, float).reshape(len(normalized_data), 1)

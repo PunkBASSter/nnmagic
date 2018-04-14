@@ -17,12 +17,12 @@ cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build 
 
 
 #settings
+params = ModelParameters()
 train = False
 normalized_column = "Normalized"
 predicted_column = "Predicted"
 
 print("Loading and preparing raw data.")
-params = ModelParameters()
 df = pd.read_csv(params.io_input_data_file, index_col="Timestamp")
 df.sort_index()
 
@@ -146,8 +146,8 @@ for j, ds in enumerate(["train", "val", "test"]):
 #for x1 in X["test"]:
 #    pred = z.eval({z.arguments[0]: x1})
 #    test_results.extend(pred[:, 0])
-
-df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(df_test, results["test"], N)
+res = results["test"]
+df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(df_test, res, N)
 denormalized_predictions = nrm.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
 df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
 df_test_with_predictions.to_csv(params.io_predictions_data_file)

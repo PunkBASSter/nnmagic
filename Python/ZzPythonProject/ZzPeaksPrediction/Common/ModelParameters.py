@@ -18,7 +18,7 @@ class ModelParameters:
 
     #Prediction settings
     pred_N = 25  # input: N subsequent values
-    pred_M = 1  # output: predict 1 value M steps ahead
+    pred_M = 2  # output: predict 1 value M steps ahead
 
     # Training parameters
     learn_training_steps = 10000
