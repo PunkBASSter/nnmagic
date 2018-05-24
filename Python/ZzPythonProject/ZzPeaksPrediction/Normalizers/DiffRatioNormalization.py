@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Common.ModelParameters import ModelParameters
 
+source_offset = 2
 value_column = 'Value'
 predictions_column = 'Predicted'
 

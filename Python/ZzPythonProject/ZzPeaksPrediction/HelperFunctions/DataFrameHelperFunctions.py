@@ -20,20 +20,20 @@ def add_list_to_source_df_padding_overlapping(dataframe, lst, N):
 
 
 
-def split_df_by_number(dataframe, val_start, test_start, N, M):
+def split_df_by_number(dataframe, val_start, test_start, N, train_offset = 2):
     """Consumes DataFrame with Timestamp as Index column and returns
      3 DataFrames corresponding to Train, Validation, Test samples respectively.
      Training DF is returned starting from index 2."""
 
     total = len(dataframe.index)
-    train = dataframe.iloc[2:val_start]
+    train = dataframe.iloc[train_offset:val_start]
     validation = dataframe.iloc[val_start-N:test_start]
     test = dataframe.iloc[test_start-N:total]
 
     return train, validation, test
 
 
-def split_df_by_size(dataframe, val_size=0.1, test_size=0.2, N = 25, M = 1):
+def split_df_by_size(dataframe, val_size, test_size, N, M ):
 
     total = len(dataframe.index)
     pos_test = int(total * (1 - test_size))

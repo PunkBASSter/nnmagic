@@ -35,7 +35,7 @@ N = params.pred_N
 M = params.pred_M
 
 print("Splitting DataFrame to Train/Validation/Test samples.")
-df_train, df_val, df_test = dfhf.split_df_by_size(df, params.size_validation, params.size_test, N, M)
+df_train, df_val, df_test = dfhf.split_df_by_size(df, params.size_validation, params.size_test, N, nrm.source_offset)
 
 print("Transforming normalized data from splitted samples to collections with LSTM NN-compatible structure.")
 train_X, train_Y = dfhf.generate_data_by_df(df_train, N, M)
@@ -100,7 +100,7 @@ trainer = C.Trainer(z, (loss, error), [learner])
 loss_summary = []
 start = time.time()
 for epoch in range(0, EPOCHS):
-    for x1, y1 in next_batch(X, Y):
+    for x1, y1 in next_batch(X["train"], Y["train"]):
         trainer.train_minibatch({x: x1, l: y1})
     if epoch % (EPOCHS / 10) == 0:
         training_loss = trainer.previous_minibatch_loss_average
