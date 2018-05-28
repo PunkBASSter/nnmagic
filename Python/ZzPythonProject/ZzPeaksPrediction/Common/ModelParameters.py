@@ -20,6 +20,9 @@ class ModelParameters:
     pred_N = 25  # input: N subsequent values
     pred_M = 2  # output: predict 1 value M steps ahead
 
+    #NN parameters
+    nn_dropout = 0.15
+
     # Training parameters
     learn_training_steps = 10000
     learn_batch_size = 100

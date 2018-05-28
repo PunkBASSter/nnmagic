@@ -13,7 +13,7 @@ source_offset = 2
 value_column = 'Value'
 predictions_column = 'Predicted'
 
-def normalize(dataframe, add_padding=False):
+def normalize(dataframe, add_padding=False, limit_percentile=90):
     """Consumes a DataFrame containing Timestamp and Value, returns list of transformed values for NN input"""
     zz_values = dataframe[value_column].tolist()
 
@@ -21,7 +21,7 @@ def normalize(dataframe, add_padding=False):
     normalized_list = nrm.calculate_norms(zz_values)
 
     abs_normalized_list = ldhf.calc_abs(normalized_list)
-    limit = np.percentile(abs_normalized_list, 90) #Clipping abs values greater than 90 percentile.
+    limit = np.percentile(abs_normalized_list, limit_percentile) #Clipping abs values greater than 90 percentile.
     limited_amp_normalized_list = ldhf.limit_by_amp(normalized_list, limit)
     padded_normalized_ltd = ldhf.add_padding(limited_amp_normalized_list) if add_padding else limited_amp_normalized_list #add padding instead of first 2 samples to put in the same DF
     scaled_normalized_ltd = ldhf.scale_data(padded_normalized_ltd, limit) #scaling data dividing by max amplitude
