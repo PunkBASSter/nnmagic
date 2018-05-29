@@ -13,6 +13,18 @@ class DefaultSampleGenerator:
     _last_val_df = None
     _last_test_df = None
 
+    def get_last_df(self):
+        return self._last_df
+
+    def get_last_train_df(self):
+        return self._last_train_df
+
+    def get_last_val_df(self):
+        return self._last_val_df
+
+    def get_last_test_df(self):
+        return self._last_test_df
+
     def __init__(self, params):
         self._params = params
 

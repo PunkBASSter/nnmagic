@@ -13,7 +13,8 @@ source_offset = 2
 value_column = 'Value'
 predictions_column = 'Predicted'
 
-def normalize(dataframe, add_padding=False, limit_percentile=90):
+
+def normalize(dataframe, add_padding=False, limit_percentile=100):
     """Consumes a DataFrame containing Timestamp and Value, returns list of transformed values for NN input"""
     zz_values = dataframe[value_column].tolist()
 

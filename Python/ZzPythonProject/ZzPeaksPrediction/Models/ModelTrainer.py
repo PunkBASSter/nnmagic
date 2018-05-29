@@ -7,7 +7,7 @@ import HelperFunctions.ArrayDataHelperFunctions as adhf
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 
-class Trainer:
+class ModelTrainer:
     _params = None
     _x = None
     _l = None

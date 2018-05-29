@@ -1,57 +1,40 @@
-import math
-from matplotlib import pyplot as plt
-import pandas as pd
-
 import cntk.tests.test_utils
 from cntk.ops.functions import load_model
-cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
-
+from matplotlib import pyplot as plt
 from Common.ModelParameters import ModelParameters
 from SampleGenerators.DefaultSampleGenerator import DefaultSampleGenerator
-from Models.EasyLstmTrain import Trainer
-import HelperFunctions.ArrayDataHelperFunctions as adhf
-import HelperFunctions.DataFrameHelperFunctions as dfhf
+from Models.ModelEvaluator import ModelEvaluator
+from Models.ModelTrainer import ModelTrainer
+
+cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
+
 
 params = ModelParameters()
 sample_generator = DefaultSampleGenerator(params)
 
 smp_x, smp_y = sample_generator.generate_samples()
 
-#trainer = Trainer(params)
+test_df = sample_generator.get_last_test_df()
+
+#trainer = ModelTrainer(params)
 #trainer.train(smp_x["train"], smp_y["train"])
+
 z = load_model(params.io_trained_model_file)
 
-
-class ModelEvaluator:
-
-    _params = None
-    _z = None
-    _last_result = None
-
-    def __init__(self, model, params):
-        self._params = params
-        self._z = model
-
-    def evaluate(self, sample, batch_size=1):
-        res = []
-        for x in adhf.next_value(sample, batch_size):
-            predicted = self._z.eval({self._z.arguments[0]: x})
-            res.extend(predicted[:, 0])
-
-        self._last_result = res
-        return res
-
-
 evaluator = ModelEvaluator(z, params)
-#eval_res = evaluator.evaluate(smp_x["test"])
+eval_res = evaluator.evaluate(smp_x["test"])
 
 
-f, a = plt.subplots(3, 1, figsize = (12, 8))
-for j, ds in enumerate(["train", "val", "test"]):
-    results = evaluator.evaluate(smp_x[ds])
-    a[j].plot(smp_y[ds], label=ds + ' raw')
-    a[j].plot(results, label=ds + ' predicted')
-[i.legend() for i in a]
+#f, a = plt.subplots(3, 1, figsize = (12, 8))
+#for j, ds in enumerate(["train", "val", "test"]):
+#    results = evaluator.evaluate(smp_x[ds])
+#    a[j].plot(smp_y[ds], label=ds + ' raw')
+#    a[j].plot(results, label=ds + ' predicted')
+#[i.legend() for i in a]
+
+
+
+
 
 plt.show()
 
