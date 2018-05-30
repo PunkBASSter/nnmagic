@@ -2,15 +2,22 @@ import cntk.tests.test_utils
 from cntk.ops.functions import load_model
 from matplotlib import pyplot as plt
 from Common.ModelParameters import ModelParameters
+from Normalizers.DiffRatioNormalizer import DiffRatioNormalizer
 from SampleGenerators.DefaultSampleGenerator import DefaultSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
 from Models.ModelTrainer import ModelTrainer
+import HelperFunctions.DataFrameHelperFunctions as dfhf
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 
 params = ModelParameters()
-sample_generator = DefaultSampleGenerator(params)
+
+N = params.pred_N
+M = params.pred_M
+
+normalizer = DiffRatioNormalizer(params)
+sample_generator = DefaultSampleGenerator(params, normalizer)
 
 smp_x, smp_y = sample_generator.generate_samples()
 
@@ -23,6 +30,12 @@ z = load_model(params.io_trained_model_file)
 
 evaluator = ModelEvaluator(z, params)
 eval_res = evaluator.evaluate(smp_x["test"])
+
+
+df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(smp_x["test"], eval_res, N)
+denormalized_predictions = normalizer.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
+df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
+df_test_with_predictions.to_csv(params.io_predictions_data_file)
 
 
 #f, a = plt.subplots(3, 1, figsize = (12, 8))
