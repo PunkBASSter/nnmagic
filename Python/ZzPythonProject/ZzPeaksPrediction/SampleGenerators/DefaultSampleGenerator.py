@@ -1,9 +1,10 @@
 import pandas as pd
-import Normalizers.DiffRatioNormalization as nrm
 import HelperFunctions.DataFrameHelperFunctions as dfhf
-
+from Normalizers.Normalizer import Normalizer
+from Common.ModelParameters import ModelParameters
 
 class DefaultSampleGenerator:
+    _normalizer = None
 
     _normalized_column = "Normalized"
     _index_column = "Timestamp"
@@ -25,8 +26,9 @@ class DefaultSampleGenerator:
     def get_last_test_df(self):
         return self._last_test_df
 
-    def __init__(self, params):
+    def __init__(self, params: ModelParameters, normalizer: Normalizer):
         self._params = params
+        self._normalizer = normalizer
 
     def generate_samples(self):
         # Loading, splitting and normalizing data
@@ -35,7 +37,7 @@ class DefaultSampleGenerator:
         df.sort_index()
 
         print("Normalizing data and adding to DataFrame.")
-        norm_list, scaling_k = nrm.normalize(df, add_padding=True)
+        norm_list, scaling_k = self._normalizer.normalize(df, add_padding=True)
         df[self._normalized_column] = pd.Series(norm_list, df.index)
 
         n = self._params.pred_N
@@ -43,7 +45,7 @@ class DefaultSampleGenerator:
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
         df_train, df_val, df_test = dfhf.split_df_by_size(df, self._params.size_validation, self._params.size_test, n,
-                                                          nrm.source_offset)
+                                                          self._normalizer.get_source_offset())
 
         self._last_df = df
         self._last_train_df = df_train

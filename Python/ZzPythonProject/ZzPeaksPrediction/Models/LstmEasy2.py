@@ -9,7 +9,6 @@ import cntk as C
 import cntk.tests.test_utils
 from cntk.ops.functions import load_model
 
-import Normalizers.DiffRatioNormalization as nrm
 import HelperFunctions.DataFrameHelperFunctions as dfhf
 import HelperFunctions.ListDataHelperFunctions as ldhf
 from Common.ModelParameters import ModelParameters
