@@ -11,50 +11,73 @@ import numpy as np
 
 from Common.ModelParameters import ModelParameters
 
+c = 0.0001
 
-def invboxcox(y,lmbda):
+def inv_boxcox(y,lmbda):
    if lmbda == 0:
       return(np.exp(y))
    else:
       return(np.exp(np.log(lmbda*y+1)/lmbda))
 
 
+def inv_diff(src_first, diff):
+    return np.r_[src_first, diff.iloc[1:]].cumsum()
+
+
+def shift_to_positive(buff):
+    min = buff.min()
+
+    if min < 0:
+        shift = abs(min)
+        return buff + shift, shift
+    return buff, 0
+
+
 def is_stationary(collection):
    test = sm.tsa.stattools.adfuller(collection)
-   print('adf: ', test[0])
-   print('p-value: ', test[1])
-   print('Critical values: ', test[4])
+   #print('adf: ', test[0])
+   #print('p-value: ', test[1])
+   #print('Critical values: ', test[4])
    res = False
    if test[0] > test[4]['5%']:
-      print('есть единичные корни, ряд не стационарен')
+      print("NOT stationary.") #'есть единичные корни, ряд не стационарен')
    else:
-      print('единичных корней нет, ряд стационарен')
+      print("Stationary.") #'единичных корней нет, ряд стационарен')
       res = True
    return res
 
+
+def is_normal(collection, alpha=1e-3):
+    k2, p = stats.normaltest(collection)
+    print("p = {:g}".format(p))
+    res = True
+    if p < alpha:  # null hypothesis: x comes from a normal distribution
+        print("NOT normal")
+        return False
+
+    print("May be Normal")
+    return True
+
+def plot():
+    plt.figure(figsize=(15, 7))
+    quotes_df.Value.plot()
+    shifted_diff, abs_shift = shift_to_positive(quotes_df.ValueDiff)
+    (shifted_diff+c).plot()
+    quotes_df.DiffBoxCox.plot()
+
+    plt.grid()
+    plt.show()
+
+    plt.figure(figsize=(15, 7))
+    quotes_df.Value.hist(bins=100)
+    (shifted_diff + c).hist(bins=100)
+    quotes_df.DiffBoxCox.hist(bins=100)
+    plt.grid()
+    plt.show()
+
+
 params = ModelParameters
-
-
 quotes_df = pd.read_csv(params.io_input_data_file)
-
-quotes_df.reset_index()
-quotes_df['Date'] = pd.to_datetime(quotes_df['Timestamp'])
-quotes_df.set_index('Date')
-
-#dts = []
-#for ts in quotes_df["Timestamp"]:
-#   dts.append(dt.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'))
-
-#for i in range(0, quotes_df["Timestamp"].__len__()):
-#   dts.append(dt.datetime.utcnow().date() + dt.timedelta(days=i))
-
-#quotes_df["FakeDate"] = pd.Series(dts)
-
-
-
-#wage['daily'] = wage.WAG_C_M*1.0 / wage.index.days_in_month
-#quotes.head()
-
 #plt.figure(figsize=(15, 7))
 #quotes_df.Value.plot()
 #wage.daily.plot()
@@ -62,36 +85,38 @@ quotes_df.set_index('Date')
 #plt.show()
 
 #plt.figure(figsize=(15, 10))
-seasonal_dcs = sm.tsa.seasonal_decompose(quotes_df.Value, freq=500)
+#seasonal_dcs = sm.tsa.seasonal_decompose(quotes_df.Value, freq=500)
 #seasonal_dcs.plot()
-df = sm.tsa.stattools.adfuller(quotes_df.Value)
 
+#idiff = quotes_df.Value
+#diff_period = 1
+#for i in range(1, 100, 1):
+#   idiff = quotes_df.Value.diff(periods=i).dropna()
+#   diff_period = i
+#   if is_stationary(idiff):
+#      print("Autoregression period = "+str(i) + "\n")
+#      break
 
+quotes_df["ValueBoxCox"], lmbda1 = stats.boxcox(quotes_df["Value"])
+quotes_df['ValueDiff'] = quotes_df.Value.diff(periods=1).dropna()
 
+shifted_diff, abs_shift = shift_to_positive(quotes_df.ValueDiff)
+shifted_diff=shifted_diff + c
+quotes_df['DiffBoxCox'], lmbda = stats.boxcox(shifted_diff)
 
-#check for stationary - for differences also
-is_stationary(quotes_df.Value)
-print("\n")
+#plots
+plot()
 
-idiff = quotes_df.Value
-for i in range(2, 100, 2):
-   idiff = quotes_df.Value.diff(periods=i).dropna()
-   if is_stationary(idiff):
-      print("Autoregression period = "+str(i) + "\n")
-      break
+#reverse
+quotes_df['DiffInvBoxCox'] = inv_boxcox(quotes_df.DiffBoxCox, lmbda)
+unshifted_diff = quotes_df['DiffInvBoxCox'] - abs_shift - c
+quotes_df['RestoredDiff'] = inv_diff(quotes_df.Value.iloc[0:1], unshifted_diff)
 
-quotes_df['ValueBox'], lmbda = stats.boxcox(quotes_df.Value)
-plt.figure(figsize=(15, 7))
-quotes_df.Value.plot()
-quotes_df.ValueBox.plot()
-plt.ylabel(u'Transformed values')
-print("Оптимальный параметр преобразования Бокса-Кокса: %f" % lmbda)
-is_stationary(quotes_df.ValueBox)
-
-idiff.plot()
-
-plt.grid()
-#print("Критерий Дики-Фуллера: p=%f" % sm.tsa.stattools.adfuller(quotes.Value)[1])
-plt.show()
+#is_stationary(quotes_df.Value); is_normal(quotes_df.Value)
+is_stationary(quotes_df.ValueBoxCox)
+is_normal(quotes_df.ValueBoxCox)
+#is_stationary(shifted_diff); is_normal(shifted_diff)
+is_stationary(quotes_df.DiffBoxCox)
+is_normal(quotes_df.DiffBoxCox)
 
 print("end")
