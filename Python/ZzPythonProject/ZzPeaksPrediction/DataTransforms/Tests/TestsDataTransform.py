@@ -4,7 +4,7 @@ from DataTransforms.TransformBase import TransformBase
 from DataTransforms.BoxCoxTransform import BoxCoxTransform
 from DataTransforms.DiffTransform import DiffTransform
 from DataTransforms.LogTransform import LogTransform
-
+from DataTransforms.ChainedTransform import ChainedTransform
 
 class TestsDataTransform(unittest.TestCase):
 
@@ -25,6 +25,9 @@ class TestsDataTransform(unittest.TestCase):
 
     def test_tr_log(self):
         self._steps_transform_reverse(LogTransform())
+
+    def test_tr_chained(self):
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(), LogTransform()))
 
 
 if __name__ == '__main__':
