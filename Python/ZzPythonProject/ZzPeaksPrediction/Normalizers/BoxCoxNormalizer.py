@@ -5,8 +5,7 @@ import pandas as pd
 from scipy import stats
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
-import warnings
-import datetime as dt
+import HelperFunctions.DataFrameHelperFunctions as dfhf
 import numpy as np
 
 from Common.ModelParameters import ModelParameters
@@ -34,35 +33,29 @@ def shift_to_positive(buff):
 
 
 def is_stationary(collection):
-   test = sm.tsa.stattools.adfuller(collection)
-   #print('adf: ', test[0])
-   #print('p-value: ', test[1])
-   #print('Critical values: ', test[4])
-   res = False
-   if test[0] > test[4]['5%']:
-      print("NOT stationary.") #'есть единичные корни, ряд не стационарен')
-   else:
-      print("Stationary.") #'единичных корней нет, ряд стационарен')
-      res = True
-   return res
+    test = sm.tsa.stattools.adfuller(collection)
+    if test[0] > test[4]['5%']:
+        print("NOT stationary.") #'есть единичные корни, ряд не стационарен')
+        return False
+    print("Stationary.") #'единичных корней нет, ряд стационарен')
+    return True
 
 
 def is_normal(collection, alpha=1e-3):
     k2, p = stats.normaltest(collection)
     print("p = {:g}".format(p))
-    res = True
     if p < alpha:  # null hypothesis: x comes from a normal distribution
         print("NOT normal")
         return False
-
     print("May be Normal")
     return True
+
 
 def plot():
     plt.figure(figsize=(15, 7))
     quotes_df.Value.plot()
     shifted_diff, abs_shift = shift_to_positive(quotes_df.ValueDiff)
-    (shifted_diff+c).plot()
+    (shifted_diff + c).plot()
     quotes_df.DiffBoxCox.plot()
 
     plt.grid()
@@ -98,7 +91,7 @@ quotes_df = pd.read_csv(params.io_input_data_file)
 #      break
 
 quotes_df["ValueBoxCox"], lmbda1 = stats.boxcox(quotes_df["Value"])
-quotes_df['ValueDiff'] = quotes_df.Value.diff(periods=1).dropna()
+quotes_df['ValueDiff'] = quotes_df.Value.diff(periods=1) #.dropna()
 
 shifted_diff, abs_shift = shift_to_positive(quotes_df.ValueDiff)
 shifted_diff=shifted_diff + c

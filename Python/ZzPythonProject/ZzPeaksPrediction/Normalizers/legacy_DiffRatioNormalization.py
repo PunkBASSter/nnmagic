@@ -1,5 +1,5 @@
 from Normalizers.DiffRatioNormalizer import DiffRatioNormalizer
-from Normalizers.Normalizer import Parameters
+
 from Normalizers.LogTransformer import LogTransformer
 
 import HelperFunctions.ListDataHelperFunctions as ldhf

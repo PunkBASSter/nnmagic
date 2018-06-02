@@ -7,6 +7,11 @@ from SampleGenerators.DefaultSampleGenerator import DefaultSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
 from Models.ModelTrainer import ModelTrainer
 import HelperFunctions.DataFrameHelperFunctions as dfhf
+from DataTransforms.TransformBase import TransformBase
+from DataTransforms.BoxCoxTransform import BoxCoxTransform
+from DataTransforms.DiffTransform import DiffTransform
+from DataTransforms.LogTransform import LogTransform
+
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
