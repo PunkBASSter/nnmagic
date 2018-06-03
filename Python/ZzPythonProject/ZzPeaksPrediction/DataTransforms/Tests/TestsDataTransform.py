@@ -9,6 +9,7 @@ from DataTransforms.ChainedTransform import ChainedTransform
 
 class TestsDataTransform(unittest.TestCase):
 
+    #Custom sequence assertions
     def assertCollectionsEqual(self, series1, series2, msg="Series are not equal, but should.", tolerance = 0.0001):
         lst1 = series1.tolist()
         lst2 = series2.tolist()
@@ -34,19 +35,16 @@ class TestsDataTransform(unittest.TestCase):
         raise AssertionError(msg)
 
 
+    #Shared Test Steps
     def _steps_transform_reverse(self, inst :TransformBase):
         df = pd.DataFrame(data={'Timestamp': [1, 3, 4, 8, 15], 'Value': [2., 4., 8., 16., 32.]})
         df["Transformed"]= inst.transform(df.Value)
-
-        dbg1 = df["Transformed"]
-        dbg2 = df.Transformed
 
         self.assertTrue(len(df.Transformed.tolist())>0, "Transformed sequence length is not greater than 0")
         self.assertCollectionNotNan( df.Transformed )
         self.assertCollectionsNotEqual( df.Value, df.Transformed, "Initial sequence is equal to transformed. Transformation has no effect?")
 
         df["Restored"] = inst.inv_transform(df.Transformed)
-
         self.assertCollectionsEqual(df.Value, df.Restored, "Initial sequence is not equal to restored.")
 
     def _steps_returned_type(self, inst :TransformBase):
@@ -56,19 +54,16 @@ class TestsDataTransform(unittest.TestCase):
         var = inst.inv_transform(df.Value)
         self.assertTrue(isinstance(var, pd.Series))
 
+
+    #Test cases
     def test_returned_type_diff(self):
         self._steps_returned_type(DiffTransform())
 
     def test_returned_type_log(self):
         self._steps_returned_type( LogTransform() )
 
-
-
     def test_tr_chained_diff_log(self):
         self._steps_transform_reverse( ChainedTransform( DiffTransform(), LogTransform() ) )
-
-
-
 
     def test_tr_diff(self):
         self._steps_transform_reverse(DiffTransform())
@@ -78,7 +73,6 @@ class TestsDataTransform(unittest.TestCase):
 
     def test_tr_log(self):
         self._steps_transform_reverse(LogTransform())
-
 
     #Classes dependent on scipy.boxcox(...) fail in bulk test executions if this function is used more than once !!
     #So, only the first executed test of the following will pass!
