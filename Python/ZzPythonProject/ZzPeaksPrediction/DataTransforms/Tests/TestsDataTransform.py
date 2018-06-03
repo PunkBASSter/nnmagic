@@ -59,47 +59,45 @@ class TestsDataTransform(unittest.TestCase):
 
     #Test cases
     def test_returned_type_diff(self):
-        self._steps_returned_type(DiffTransform())
+        self._steps_returned_type(DiffTransform(DiffTransformParams()))
 
     def test_returned_type_log(self):
-        self._steps_returned_type( LogTransform() )
+        self._steps_returned_type( LogTransform(LogTransformParams()) )
 
     def test_returned_type_shift(self):
-        self._steps_returned_type(ShiftToPositiveTransform())
+        self._steps_returned_type(ShiftToPositiveTransform(ShiftToPositiveTransformParams()))
 
     #WARNING! ONLY First executed ChainedTransform Test Case passes!
     def test_tr_chained_diff_shift_log(self):
-        self._steps_transform_reverse( ChainedTransform( DiffTransform(), ShiftToPositiveTransform(), LogTransform()), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ShiftToPositiveTransform(ShiftToPositiveTransformParams()), LogTransform(LogTransformParams())), [2., 4., 8., 16., 32.])
     def test_tr_chained_diff_shiftNegative_log(self):
-        self._steps_transform_reverse( ChainedTransform( DiffTransform(), ShiftToPositiveTransform(), LogTransform()), [2., -4., 8., -16., 9.])
+        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ShiftToPositiveTransform(ShiftToPositiveTransformParams()), LogTransform(LogTransformParams())), [2., -4., 8., -16., 9.])
 
     def test_tr_diff(self):
-        self._steps_transform_reverse(DiffTransform(), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.])
     def test_tr_diff_with_nan_replacement(self):
         self._steps_transform_reverse(DiffTransform(DiffTransformParams(nan_replacement_value = 1)), [2., 4., 8., 16., 32.])
 
     def test_tr_shift(self):
-        self._steps_transform_reverse(ShiftToPositiveTransform(), [2., 4., -8., -16., 32.])
+        self._steps_transform_reverse(ShiftToPositiveTransform(ShiftToPositiveTransformParams()), [2., 4., -8., -16., 32.])
 
     def test_tr_log(self):
-        self._steps_transform_reverse(LogTransform(), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., 4., 8., 16., 32.])
 
     def test_tr_logNegative(self):
-        self._steps_transform_reverse(LogTransform(), [2., -4., 8., 16., -32.])
+        self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., -4., 8., 16., -32.])
 
-    #Classes dependent on scipy.boxcox(...) fail in bulk test executions if this function is used more than once !!
-    #So, only the first executed test of the following will pass!
     def test_tr_boxcox(self):
-        self._steps_transform_reverse( BoxCoxTransform(), [2., 4., 8., 16., 32.] )
+        self._steps_transform_reverse( BoxCoxTransform(BoxCoxTransformParams()), [2., 4., 8., 16., 32.] )
 #
     def test_returned_type_boxcox(self):
-        self._steps_returned_type( BoxCoxTransform(BoxCoxTransformParams(lmbda=None, alpha=None)))
+        self._steps_returned_type( BoxCoxTransform(BoxCoxTransformParams()))
 #
     def test_tr_chained_boxcox_diff(self):
-        self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(BoxCoxTransformParams(lmbda=None, alpha=None)), DiffTransform() ), [2., 4., 8., 16., 32.] )
+        self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(BoxCoxTransformParams()), DiffTransform(DiffTransformParams()) ), [2., 4., 8., 16., 32.] )
 
     def test_tr_chained_boxcox_diff_log(self):
-        self._steps_transform_reverse( ChainedTransform(DiffTransform(), ShiftToPositiveTransform(), BoxCoxTransform()),[2., 4., -8., -16., 4.])
+        self._steps_transform_reverse( ChainedTransform(DiffTransform(DiffTransformParams()), ShiftToPositiveTransform(ShiftToPositiveTransformParams()), BoxCoxTransform(BoxCoxTransformParams())),[2., 4., -8., -16., 4.])
 
 if __name__ == '__main__':
     unittest.main()

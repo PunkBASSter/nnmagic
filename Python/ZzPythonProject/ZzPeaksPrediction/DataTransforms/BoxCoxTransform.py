@@ -10,11 +10,10 @@ class BoxCoxTransformParams(TransformParams):
 
 class BoxCoxTransform(TransformBase):
 
-    def __init__(self, params = BoxCoxTransformParams()):
+    def __init__(self, params: BoxCoxTransformParams):
         self.transform_params = params
 
     def transform(self, series :pd.Series):
-
         boxcox_result = stats.boxcox(series.values, lmbda=self.transform_params.lmbda, alpha=self.transform_params.alpha)
         #Unpacking result tuple directly from scipy.boxcox(...) causes weird errors in bulk execution of tests!
         res, lmbda = boxcox_result[0], boxcox_result[1]

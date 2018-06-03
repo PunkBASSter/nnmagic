@@ -4,6 +4,7 @@ import cntk as C
 import cntk.tests.test_utils
 import HelperFunctions.ArrayDataHelperFunctions as adhf
 
+
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 
@@ -14,8 +15,12 @@ class ModelTrainer:
     _z = None
     _trainer = None
 
-    def __init__(self, params):
+    def __init__(self, params, z = None):
         self._params = params
+        self.init_model()
+        if not z is None: self._z = z
+        self.init_trainer()
+
 
     def create_model(self):
         """Create the model for time series prediction"""
@@ -51,9 +56,6 @@ class ModelTrainer:
         self._trainer = trainer
 
     def train(self, train_x, train_y):
-
-        self.init_model()
-        self.init_trainer()
 
         # train
         loss_summary = []

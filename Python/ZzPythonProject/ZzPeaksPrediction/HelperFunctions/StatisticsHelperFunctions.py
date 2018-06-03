@@ -30,3 +30,4 @@ def is_normal(collection, alpha=1e-3):
         return False
     print("May be Normal")
     return True
+

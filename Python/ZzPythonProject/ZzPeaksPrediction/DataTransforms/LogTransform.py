@@ -1,6 +1,5 @@
 from DataTransforms.TransformBase import TransformBase, TransformParams
 import math
-import numpy as np
 import pandas as pd
 
 class LogTransformParams(TransformParams):
@@ -10,7 +9,7 @@ class LogTransformParams(TransformParams):
 
 class LogTransform(TransformBase):
 
-    def __init__(self, params = LogTransformParams()):
+    def __init__(self, params :LogTransformParams):
         self.transform_params = params
 
     def transform(self, series :pd.Series):

@@ -5,6 +5,10 @@ class TransformParams:
         for key, value in kwargs.items():
             setattr( self, key, value )
 
+    def tostring(self):
+        #todo implement method
+        return ""
+
 class TransformBase:
 
     transform_params = None

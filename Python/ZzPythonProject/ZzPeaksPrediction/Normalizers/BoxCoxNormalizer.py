@@ -17,7 +17,7 @@ from DataTransforms.ChainedTransform import ChainedTransform
 
 from Common.ModelParameters import ModelParameters
 
-c = 0.0001
+c = 1.1
 
 def inv_boxcox(y,lmbda):
    if lmbda == 0:
@@ -101,6 +101,8 @@ transform = ChainedTransform(DiffTransform(), BoxCoxTransform())
 
 quotes_df["ValueBoxCox"], lmbda1 = stats.boxcox(quotes_df["Value"])
 quotes_df['ValueDiff'] = quotes_df.Value.diff(periods=1) #.dropna()
+quotes_df.ValueDiff.iloc[0:1] = quotes_df.ValueDiff.iloc[1:2].values[0]
+
 
 shifted_diff, abs_shift = shift_to_positive(quotes_df.ValueDiff)
 shifted_diff=shifted_diff + c
@@ -114,11 +116,27 @@ quotes_df['DiffInvBoxCox'] = inv_boxcox(quotes_df.DiffBoxCox, lmbda)
 unshifted_diff = quotes_df['DiffInvBoxCox'] - abs_shift - c
 quotes_df['RestoredDiff'] = inv_diff(quotes_df.Value.iloc[0:1], unshifted_diff)
 
-#is_stationary(quotes_df.Value); is_normal(quotes_df.Value)
+print("Value:")
+is_stationary(quotes_df.Value)
+is_normal(quotes_df.Value)
+print("-----------------------\n")
+
+print("Value Box Cox:")
 is_stationary(quotes_df.ValueBoxCox)
 is_normal(quotes_df.ValueBoxCox)
-#is_stationary(shifted_diff); is_normal(shifted_diff)
+print("-----------------------\n")
+
+print("Value DIFF:")
+is_stationary(quotes_df.ValueDiff)
+is_normal(quotes_df.ValueDiff)
+print("-----------------------\n")
+
+print("Value DIFF_BoxCox:")
 is_stationary(quotes_df.DiffBoxCox)
 is_normal(quotes_df.DiffBoxCox)
+print("-----------------------\n")
+
+#is_stationary(shifted_diff); is_normal(shifted_diff)
+
 
 print("end")

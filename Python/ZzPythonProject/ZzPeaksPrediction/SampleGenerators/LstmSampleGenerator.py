@@ -44,8 +44,7 @@ class LstmSampleGenerator:
         m = self._params.pred_M
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
-        df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.size_validation, self._params.size_test, n,
-                                                           self._transform.get_source_offset() )
+        df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.size_validation, self._params.size_test, n, m)
 
         self._last_df = df
         self._last_train_df = df_train

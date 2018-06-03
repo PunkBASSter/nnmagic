@@ -10,7 +10,7 @@ class DiffTransformParams(TransformParams):
 
 class DiffTransform(TransformBase):
 
-    def __init__(self, params = DiffTransformParams()):
+    def __init__(self, params: DiffTransformParams):
         self.transform_params = params
 
     def transform(self, series):

@@ -10,7 +10,7 @@ class ShiftToPositiveTransformParams(TransformParams):
 
 class ShiftToPositiveTransform(TransformBase):
 
-    def __init__(self, params = ShiftToPositiveTransformParams()):
+    def __init__(self, params :ShiftToPositiveTransformParams):
         self.transform_params = params
 
     def transform(self, series: pd.Series):

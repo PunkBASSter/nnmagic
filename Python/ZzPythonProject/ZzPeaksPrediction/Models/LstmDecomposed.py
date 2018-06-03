@@ -3,15 +3,17 @@ from cntk.ops.functions import load_model
 from matplotlib import pyplot as plt
 from Common.ModelParameters import ModelParameters
 from Normalizers.DiffRatioNormalizer import DiffRatioNormalizer
-from SampleGenerators.DefaultSampleGenerator import DefaultSampleGenerator
+from SampleGenerators.LstmSampleGenerator import LstmSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
 from Models.ModelTrainer import ModelTrainer
 import HelperFunctions.DataFrameHelperFunctions as dfhf
-from DataTransforms.TransformBase import TransformBase
-from DataTransforms.BoxCoxTransform import BoxCoxTransform
-from DataTransforms.DiffTransform import DiffTransform
-from DataTransforms.LogTransform import LogTransform
-
+from DataTransforms.TransformBase import TransformBase, TransformParams
+from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
+from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
+from DataTransforms.LogTransform import LogTransform, LogTransformParams
+from DataTransforms.ShiftToPositiveTransform import ShiftToPositiveTransform, ShiftToPositiveTransformParams
+from DataTransforms.ChainedTransform import ChainedTransform
+from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import StatsInfoTransformDecorator
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
@@ -21,26 +23,35 @@ params = ModelParameters()
 N = params.pred_N
 M = params.pred_M
 
-normalizer = DiffRatioNormalizer(params)
-sample_generator = DefaultSampleGenerator(params, normalizer)
+box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
+diff_transform = DiffTransform(DiffTransformParams())
+log_transform = LogTransform(LogTransformParams())
+shift_to_positive_transform = ShiftToPositiveTransform(ShiftToPositiveTransformParams())
+
+complex_transform = ChainedTransform()
+
+sample_generator = LstmSampleGenerator(params, StatsInfoTransformDecorator(box_cox_transform))
 
 smp_x, smp_y = sample_generator.generate_samples()
 
 test_df = sample_generator.get_last_test_df()
 
-#trainer = ModelTrainer(params)
-#trainer.train(smp_x["train"], smp_y["train"])
+trainer = ModelTrainer(params)
+trainer.train(smp_x["train"], smp_y["train"])
 
 z = load_model(params.io_trained_model_file)
 
 evaluator = ModelEvaluator(z, params)
+
+for labeltxt in ["train", "val", "test"]:
+    print("mse for {}: {:.6f}".format(labeltxt, evaluator.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
+
 eval_res = evaluator.evaluate(smp_x["test"])
 
-
-df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(smp_x["test"], eval_res, N)
-denormalized_predictions = normalizer.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
-df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
-df_test_with_predictions.to_csv(params.io_predictions_data_file)
+#df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(smp_x["test"], eval_res, N)
+#denormalized_predictions = normalizer.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
+#df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
+#df_test_with_predictions.to_csv(params.io_predictions_data_file)
 
 
 #f, a = plt.subplots(3, 1, figsize = (12, 8))
