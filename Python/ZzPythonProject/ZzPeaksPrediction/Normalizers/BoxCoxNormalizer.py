@@ -8,6 +8,13 @@ import matplotlib.pyplot as plt
 import HelperFunctions.DataFrameHelperFunctions as dfhf
 import numpy as np
 
+from DataTransforms.TransformBase import TransformBase, TransformParams
+from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
+from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
+from DataTransforms.LogTransform import LogTransform, LogTransformParams
+from DataTransforms.ChainedTransform import ChainedTransform
+
+
 from Common.ModelParameters import ModelParameters
 
 c = 0.0001
@@ -89,6 +96,8 @@ quotes_df = pd.read_csv(params.io_input_data_file)
 #   if is_stationary(idiff):
 #      print("Autoregression period = "+str(i) + "\n")
 #      break
+
+transform = ChainedTransform(DiffTransform(), BoxCoxTransform())
 
 quotes_df["ValueBoxCox"], lmbda1 = stats.boxcox(quotes_df["Value"])
 quotes_df['ValueDiff'] = quotes_df.Value.diff(periods=1) #.dropna()

@@ -16,7 +16,11 @@ class DiffTransform(TransformBase):
     def transform(self, series):
         self.transform_params.first_origin_element = series.iloc[0:1]
         result = series.diff(periods=self.transform_params.periods)
-        result.iloc[0:1] = result.iloc[1:2].tolist()[0] if self.transform_params.nan_replacement_value is None else self.transform_params.nan_replacement_value
+
+        nan_replacement = self.transform_params.nan_replacement_value
+        if nan_replacement is None:
+            nan_replacement = result.iloc[1:2].tolist()[0]
+        result.iloc[0:1] = nan_replacement
 
         return result
 

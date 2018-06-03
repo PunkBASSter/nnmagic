@@ -7,7 +7,7 @@ class TransformParams:
 
 class TransformBase:
 
-    transform_params = TransformParams()
+    transform_params = None
 
     def transform(self, series: pd.Series):
         raise NotImplementedError("Subclass must implement abstract method")
