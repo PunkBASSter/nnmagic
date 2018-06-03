@@ -10,23 +10,22 @@ class ChainedTransform(TransformBase):
             self._transformation_sequence.append(arg)
 
 
-    def transform(self, series, **kwargs):
-        length =  len(self._transformation_sequence)
-        if length < 2: raise ValueError("Sequence must contain at least 2 elements.")
-
-        res = self._transformation_sequence[0].transform(series, kwargs)
-        for i in range(1,length):
-            res = self._transformation_sequence[i].transform(res, kwargs)
-
-        return res
-
-    def inv_transform(self, series, **kwargs):
+    def transform(self, series):
         length = len(self._transformation_sequence)
         if length < 2: raise ValueError("Sequence must contain at least 2 elements.")
 
-        sequence = self._transformation_sequence.reverse()
-        res = sequence[0].inv_transform(series, kwargs)
+        res = self._transformation_sequence[0].transform(series)
         for i in range(1, length):
-            res = sequence[i].inv_transform(res, kwargs)
+            res = self._transformation_sequence[i].transform(res)
+
+        return res
+
+    def inv_transform(self, series):
+        length = len(self._transformation_sequence)
+        if length < 2: raise ValueError("Sequence must contain at least 2 elements.")
+
+        res = self._transformation_sequence[length-1].inv_transform(series)
+        for i in range(length-2, -1, -1):
+            res = self._transformation_sequence[i].inv_transform(res)
 
         return res

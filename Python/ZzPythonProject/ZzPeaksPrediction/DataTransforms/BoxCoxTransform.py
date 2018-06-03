@@ -1,23 +1,35 @@
-from scipy import stats
-from DataTransforms.TransformBase import TransformBase
+from scipy.stats import morestats as stats
+from DataTransforms.TransformBase import TransformBase, TransformParams
 import numpy as np
+import pandas as pd
+
+class BoxCoxTransformParams(TransformParams):
+    lmbda = None
+    alpha = None
+
 
 class BoxCoxTransform(TransformBase):
 
-    _lambda = None
-    _alpha = None
+    def __init__(self, params = BoxCoxTransformParams()):
+        self.transform_params = params
 
-    def transform(self, series, lmbda=None, alpha=None):
-        self._alpha = alpha
-        res, self._lambda = stats.boxcox(series, lmbda=lmbda, alpha=alpha)
-        return res
+    def transform(self, series :pd.Series):
 
-    def inv_transform(self, series, lmbda=None):
-        if lmbda is None:
-            return self._inv_boxcox(series, self._lambda)
-        return self._inv_boxcox(series, lmbda)
+        boxcox_result = stats.boxcox(series.values, lmbda=self.transform_params.lmbda, alpha=self.transform_params.alpha)
+        #Unpacking result tuple directly from scipy.boxcox(...) causes weird errors in bulk execution of tests!
+        res, lmbda = boxcox_result[0], boxcox_result[1]
+        self.transform_params.lmbda = lmbda
+        return pd.Series(res)
+
+    def inv_transform(self, series :pd.Series):
+        return self._inv_boxcox(series, self.transform_params.lmbda)
+
+    #def _boxcox(self,x,lmbda):
+    #    if lmbda == 0:
+    #        return (np.log(x))
 
     def _inv_boxcox(self, y, lmbda):
         if lmbda == 0:
             return (np.exp(y))
         return (np.exp(np.log(lmbda * y + 1) / lmbda))
+
