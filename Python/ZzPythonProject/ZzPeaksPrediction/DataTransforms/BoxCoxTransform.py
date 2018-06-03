@@ -24,10 +24,6 @@ class BoxCoxTransform(TransformBase):
     def inv_transform(self, series :pd.Series):
         return self._inv_boxcox(series, self.transform_params.lmbda)
 
-    #def _boxcox(self,x,lmbda):
-    #    if lmbda == 0:
-    #        return (np.log(x))
-
     def _inv_boxcox(self, y, lmbda):
         if lmbda == 0:
             return (np.exp(y))

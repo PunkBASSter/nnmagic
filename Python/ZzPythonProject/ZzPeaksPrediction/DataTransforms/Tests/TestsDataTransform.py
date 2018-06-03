@@ -62,20 +62,13 @@ class TestsDataTransform(unittest.TestCase):
     def test_returned_type_log(self):
         self._steps_returned_type( LogTransform() )
 
-    def test_returned_type_boxcox(self):
-        self._steps_returned_type( BoxCoxTransform() )
+
 
     def test_tr_chained_diff_log(self):
         self._steps_transform_reverse( ChainedTransform( DiffTransform(), LogTransform() ) )
 
-    def test_tr_chained_boxcox_diff(self):
-        self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(), DiffTransform() ) )
 
-    def test_tr_chained_boxcox_diff_log(self):
-        self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(), DiffTransform(), LogTransform() ) )
 
-    def test_tr_boxcox(self):
-        self._steps_transform_reverse(BoxCoxTransform())
 
     def test_tr_diff(self):
         self._steps_transform_reverse(DiffTransform())
@@ -87,6 +80,19 @@ class TestsDataTransform(unittest.TestCase):
         self._steps_transform_reverse(LogTransform())
 
 
+    #Classes dependent on scipy.boxcox(...) fail in bulk test executions if this function is used more than once !!
+    #So, only the first executed test of the following will pass!
+    def test_tr_boxcox(self):
+        self._steps_transform_reverse( BoxCoxTransform() )
+
+    def test_returned_type_boxcox(self):
+        self._steps_returned_type( BoxCoxTransform() )
+
+    def test_tr_chained_boxcox_diff(self):
+        self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(), DiffTransform() ) )
+
+    def test_tr_chained_boxcox_diff_log(self):
+        self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(), DiffTransform(), LogTransform() ) )
 
 if __name__ == '__main__':
     unittest.main()

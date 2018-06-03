@@ -8,6 +8,7 @@ from DataTransforms.LogTransform import LogTransform, LogTransformParams
 from DataTransforms.ChainedTransform import ChainedTransform
 
 
+#not used :( doesn't work in test runs
 class TestsChainedTransform(TestsDataTransform):
 
     def test_tr_chained_diff_log(self):
