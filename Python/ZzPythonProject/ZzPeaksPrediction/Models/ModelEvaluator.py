@@ -25,10 +25,3 @@ class ModelEvaluator:
 
         self._last_result = res
         return res
-
-    def get_mse(self, X, Y):
-        result = 0.0
-        for x1, y1 in adhf.next_batch( X, Y, self._params.learn_batch_size ):
-            eval_error = self._evaluator.test_minibatch( {self._z.arguments[0]: x1, self._z.arguments[1]: y1} )
-            result += eval_error
-        return result / len( X )

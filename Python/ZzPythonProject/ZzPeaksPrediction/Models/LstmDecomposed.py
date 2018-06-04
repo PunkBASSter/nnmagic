@@ -28,9 +28,9 @@ diff_transform = DiffTransform(DiffTransformParams())
 log_transform = LogTransform(LogTransformParams())
 shift_to_positive_transform = ShiftToPositiveTransform(ShiftToPositiveTransformParams())
 
-complex_transform = ChainedTransform()
+#complex_transform = ChainedTransform(box_cox_transform) #add decorator later
 
-sample_generator = LstmSampleGenerator(params, StatsInfoTransformDecorator(box_cox_transform))
+sample_generator = LstmSampleGenerator(params, box_cox_transform)
 
 smp_x, smp_y = sample_generator.generate_samples()
 
@@ -44,9 +44,9 @@ z = load_model(params.io_trained_model_file)
 evaluator = ModelEvaluator(z, params)
 
 for labeltxt in ["train", "val", "test"]:
-    print("mse for {}: {:.6f}".format(labeltxt, evaluator.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
+    print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
 
-eval_res = evaluator.evaluate(smp_x["test"])
+
 
 #df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(smp_x["test"], eval_res, N)
 #denormalized_predictions = normalizer.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
@@ -54,14 +54,14 @@ eval_res = evaluator.evaluate(smp_x["test"])
 #df_test_with_predictions.to_csv(params.io_predictions_data_file)
 
 
-#f, a = plt.subplots(3, 1, figsize = (12, 8))
-#for j, ds in enumerate(["train", "val", "test"]):
-#    results = evaluator.evaluate(smp_x[ds])
-#    a[j].plot(smp_y[ds], label=ds + ' raw')
-#    a[j].plot(results, label=ds + ' predicted')
-#[i.legend() for i in a]
+f, a = plt.subplots(3, 1, figsize = (12, 8))
+for j, ds in enumerate(["train", "val", "test"]):
+    results = evaluator.evaluate(smp_x[ds])
+    a[j].plot(smp_y[ds], label=ds + ' raw')
+    a[j].plot(results, label=ds + ' predicted')
+[i.legend() for i in a]
 
-
+eval_res = evaluator.evaluate(smp_x["test"])
 
 
 

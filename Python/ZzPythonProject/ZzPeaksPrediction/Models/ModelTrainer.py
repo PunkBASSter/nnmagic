@@ -71,3 +71,10 @@ class ModelTrainer:
         # A look how the loss function shows how well the model is converging
         plt.plot(loss_summary, label='training loss')
         self._z.save(self._params.io_trained_model_file)
+
+    def get_mse(self, X, Y):
+        result = 0.0
+        for x1, y1 in adhf.next_batch( X, Y, self._params.learn_batch_size ):
+            eval_error = self._trainer.test_minibatch( {self._x: x1, self._l: y1} )
+            result += eval_error
+        return result / len(X)

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy
 import HelperFunctions.DataFrameHelperFunctions as dfhf
 from DataTransforms import TransformBase
 from Common.ModelParameters import ModelParameters
@@ -38,7 +39,7 @@ class LstmSampleGenerator:
         df = pd.read_csv(self._params.io_input_data_file, index_col=self._index_column)
         df.sort_index()
 
-        df[self._normalized_column] = self._transform.transform(df.Value)
+        df[self._normalized_column] = self._transform.transform(df[self._value_column]).values
 
         n = self._params.pred_N
         m = self._params.pred_M

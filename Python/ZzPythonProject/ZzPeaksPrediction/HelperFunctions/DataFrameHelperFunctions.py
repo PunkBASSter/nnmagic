@@ -44,7 +44,7 @@ def split_df_by_size(dataframe, val_size, test_size, N, M ):
 
 def generate_data_by_df(dataframe, time_steps, time_shift):
     normalized = dataframe[df_normalized_column].tolist()
-    data = np.array(normalized)
+    data = np.array(normalized).astype(np.float32)
     return generate_data(data, time_steps, time_shift)
 
 
