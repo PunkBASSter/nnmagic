@@ -37,9 +37,10 @@ smp_x, smp_y = sample_generator.generate_samples()
 test_df = sample_generator.get_last_test_df()
 
 trainer = ModelTrainer(params)
-trainer.train(smp_x["train"], smp_y["train"])
+#trainer.train(smp_x["train"], smp_y["train"])
+trainer.load_model()
 
-z = load_model(params.io_trained_model_file)
+z = trainer._z #load_model(params.io_trained_model_file)
 
 evaluator = ModelEvaluator(z, params)
 

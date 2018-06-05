@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from cntk.ops.functions import load_model
 import time
 import cntk as C
 import cntk.tests.test_utils
@@ -37,7 +38,6 @@ class ModelTrainer:
         self._l = C.input_variable(1, dynamic_axes=self._z.dynamic_axes, name="y")
 
     def init_trainer(self):
-
         learning_rate = 0.01
         lr_schedule = C.learning_parameter_schedule(learning_rate)
 
@@ -56,7 +56,6 @@ class ModelTrainer:
         self._trainer = trainer
 
     def train(self, train_x, train_y):
-
         # train
         loss_summary = []
         start = time.time()
@@ -71,6 +70,9 @@ class ModelTrainer:
         # A look how the loss function shows how well the model is converging
         plt.plot(loss_summary, label='training loss')
         self._z.save(self._params.io_trained_model_file)
+
+    def load_model(self):
+        self._z = load_model(self._params.io_trained_model_file)
 
     def get_mse(self, X, Y):
         result = 0.0
