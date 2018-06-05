@@ -64,7 +64,8 @@ for j, ds in enumerate(["train", "val", "test"]):
 
 eval_res = evaluator.evaluate(smp_x["test"])
 
-
+#TODO Synchronize charts offsets for M > 1!
+#TODO Design interface for sample splitting, taking into account reverse transforms.
 
 plt.show()
 
