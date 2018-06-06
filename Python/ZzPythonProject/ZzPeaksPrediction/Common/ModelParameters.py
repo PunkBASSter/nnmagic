@@ -13,8 +13,11 @@ class ModelParameters:
     io_trained_model_file = io_folder + "Trained_Model_" + io_file_name_base + ".cmf"
 
     #Sample size parameters
-    size_test = 0.2
-    size_validation = 0.1
+    data_validation_sample_part = 0.0
+    data_test_sample_part = 0.3
+    data_timestamp_column = "Timestamp"
+    data_value_column = "Value"
+    data_normalized_column = "Normalized"
 
     #Prediction settings
     pred_N = 25  # input: N subsequent values
@@ -28,7 +31,3 @@ class ModelParameters:
     learn_batch_size = 100
     learn_epochs = 200
     learn_learning_rate = 0.01
-
-    # Normalization params
-    norm_high_amp_limit = None
-    norm_logarithm_base = None

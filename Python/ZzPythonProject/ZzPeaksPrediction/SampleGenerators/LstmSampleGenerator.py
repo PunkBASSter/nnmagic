@@ -8,26 +8,11 @@ from Common.ModelParameters import ModelParameters
 class LstmSampleGenerator:
     _transform = None
 
-    _value_column = "Value"
-    _index_column = "Timestamp"
-    _normalized_column = "Normalized"
     _params = None
-    _last_df = None
-    _last_train_df = None
-    _last_val_df = None
-    _last_test_df = None
 
-    def get_last_df(self):
-        return self._last_df
+    samples_cached_last = None
 
-    def get_last_train_df(self):
-        return self._last_train_df
-
-    def get_last_val_df(self):
-        return self._last_val_df
-
-    def get_last_test_df(self):
-        return self._last_test_df
+    _results_shift_from_left = 0
 
     def __init__(self, params: ModelParameters, transform: TransformBase):
         self._params = params
@@ -36,21 +21,21 @@ class LstmSampleGenerator:
     def generate_samples(self):
         # Loading, splitting and normalizing data
         print("Loading and preparing raw data.")
-        df = pd.read_csv(self._params.io_input_data_file, index_col=self._index_column)
-        df.sort_index()
+        df = pd.read_csv(self._params.io_input_data_file)
+        df.sort(self._params.data_timestamp_column)
 
-        df[self._normalized_column] = self._transform.transform(df[self._value_column]).values
+        #df[self._normalized_column] = self._transform.transform(df[self._value_column]).values
 
         n = self._params.pred_N
         m = self._params.pred_M
+        self._results_shift_from_left = m - 1
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
-        df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.size_validation, self._params.size_test, n, m)
+        self.samples_cached_last = df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
 
-        self._last_df = df
-        self._last_train_df = df_train
-        self._last_val_df = df_val
-        self._last_test_df = df_test
+        df_train[self._params.data_normalized_column] = self._transform.transform(df_train[self._params.data_value_column]).values
+        df_val[self._params.data_normalized_column] = self._transform.transform(df_val[self._params.data_value_column]).values
+        df_test[self._params.data_normalized_column] = self._transform.transform(df_test[self._params.data_value_column]).values
 
         print("Transforming normalized data from splitted samples to collections with LSTM NN-compatible structure.")
         train__x, train__y = dfhf.generate_data_by_df(df_train, n, m)
