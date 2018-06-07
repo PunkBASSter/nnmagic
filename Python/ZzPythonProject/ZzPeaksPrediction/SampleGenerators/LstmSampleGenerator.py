@@ -53,7 +53,7 @@ class LstmSampleGenerator:
         ln2 = len(sample.Value.tolist())
 
         left_padding = sample[self._params.data_normalized_column].iloc[0: self.results_shift_from_left_df].values
-        res_series = pd.Series(lst)
+        res_series = pd.Series(lst).values
         sample["NnRes"] = np.r_[left_padding, res_series]
         sample["ResInvTransformed"] = self._transform.inv_transform(sample["NnRes"])
         return sample
