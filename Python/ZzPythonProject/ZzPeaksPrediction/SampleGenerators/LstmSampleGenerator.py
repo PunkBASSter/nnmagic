@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy
+import numpy as np
 import HelperFunctions.DataFrameHelperFunctions as dfhf
 from DataTransforms import TransformBase
 from Common.ModelParameters import ModelParameters
@@ -10,9 +10,9 @@ class LstmSampleGenerator:
 
     _params = None
 
-    samples_cached_last = None
+    samples_cached = None
 
-    _results_shift_from_left = 0
+    results_shift_from_left_df = 0
 
     def __init__(self, params: ModelParameters, transform: TransformBase):
         self._params = params
@@ -24,18 +24,18 @@ class LstmSampleGenerator:
         df = pd.read_csv(self._params.io_input_data_file)
         df.sort(self._params.data_timestamp_column)
 
-        #df[self._normalized_column] = self._transform.transform(df[self._value_column]).values
-
         n = self._params.pred_N
         m = self._params.pred_M
-        self._results_shift_from_left = m - 1
+        self.results_shift_from_left_df = n + m
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
-        self.samples_cached_last = df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
+        df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
 
         df_train[self._params.data_normalized_column] = self._transform.transform(df_train[self._params.data_value_column]).values
         df_val[self._params.data_normalized_column] = self._transform.transform(df_val[self._params.data_value_column]).values
         df_test[self._params.data_normalized_column] = self._transform.transform(df_test[self._params.data_value_column]).values
+
+        self.samples_cached = {"train": df_train, "val": df_val, "test": df_test}
 
         print("Transforming normalized data from splitted samples to collections with LSTM NN-compatible structure.")
         train__x, train__y = dfhf.generate_data_by_df(df_train, n, m)
@@ -45,3 +45,15 @@ class LstmSampleGenerator:
         smp_x = {"train": train__x, "val": val__x, "test": test__x}
         smp_y = {"train": train__y, "val": val__y, "test": test__y}
         return smp_x, smp_y
+
+    def add_output_list_to_df(self, lst:list, smp: str):
+        ln1 = len(lst)
+
+        sample = self.samples_cached[smp]
+        ln2 = len(sample.Value.tolist())
+
+        left_padding = sample[self._params.data_normalized_column].iloc[0: self.results_shift_from_left_df].values
+        res_series = pd.Series(lst)
+        sample["NnRes"] = np.r_[left_padding, res_series]
+        sample["ResInvTransformed"] = self._transform.inv_transform(sample["NnRes"])
+        return sample

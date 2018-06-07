@@ -28,13 +28,11 @@ diff_transform = DiffTransform(DiffTransformParams())
 log_transform = LogTransform(LogTransformParams())
 shift_to_positive_transform = ShiftToPositiveTransform(ShiftToPositiveTransformParams())
 
-#complex_transform = ChainedTransform(box_cox_transform) #add decorator later
+chained_transform = ChainedTransform(diff_transform, log_transform)
 
-sample_generator = LstmSampleGenerator(params, box_cox_transform)
-
+sample_generator = LstmSampleGenerator(params, chained_transform)
 smp_x, smp_y = sample_generator.generate_samples()
-
-test_df = sample_generator.get_last_test_df()
+data_frames = sample_generator.samples_cached
 
 trainer = ModelTrainer(params)
 #trainer.train(smp_x["train"], smp_y["train"])
@@ -42,18 +40,18 @@ trainer.load_model()
 
 z = trainer._z #load_model(params.io_trained_model_file)
 
-evaluator = ModelEvaluator(z, params)
-
-for labeltxt in ["train", "val", "test"]:
+for labeltxt in ["train", "test"]:
     print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
 
 
+evaluator = ModelEvaluator(z, params)
+eval_res = evaluator.evaluate(smp_x["test"])
 
-#df_test_with_predictions, pred_start_timestamp = dfhf.add_list_to_source_df_padding_overlapping(smp_x["test"], eval_res, N)
-#denormalized_predictions = normalizer.denormalize_synchronous_len(df_test_with_predictions, scaling_k, predicted_column)
-#df_test_with_predictions["Restored"] = pd.Series(ldhf.add_padding(denormalized_predictions), df_test_with_predictions.index)
-#df_test_with_predictions.to_csv(params.io_predictions_data_file)
+test_res = sample_generator.add_output_list_to_df(eval_res, "test")
 
+plt.figure(figsize=(15, 7))
+test_res.Value.plot()
+test_res.ResInvTransformed.plot()
 
 f, a = plt.subplots(3, 1, figsize = (12, 8))
 for j, ds in enumerate(["train", "val", "test"]):
@@ -62,7 +60,7 @@ for j, ds in enumerate(["train", "val", "test"]):
     a[j].plot(results, label=ds + ' predicted')
 [i.legend() for i in a]
 
-eval_res = evaluator.evaluate(smp_x["test"])
+
 
 #TODO Synchronize charts offsets for M > 1!
 #TODO Design interface for sample splitting, taking into account reverse transforms.
