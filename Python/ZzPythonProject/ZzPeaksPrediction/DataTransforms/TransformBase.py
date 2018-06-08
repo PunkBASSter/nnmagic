@@ -14,8 +14,8 @@ class TransformBase:
     transform_params = None
 
     def transform(self, series: pd.Series):
-        raise NotImplementedError("Subclass must implement abstract method")
+        return series
 
     def inv_transform(self, series: pd.Series):
-        raise NotImplementedError("Subclass must implement abstract method")
+        return series
 

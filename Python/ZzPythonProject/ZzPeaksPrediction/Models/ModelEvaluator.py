@@ -20,7 +20,6 @@ class ModelEvaluator:
         res = []
         for x in adhf.next_value(sample, batch_size):
             predicted = self._z.eval({self._z.arguments[0]: x})
-            error = self._z.test
             res.extend(predicted[:, 0])
 
         self._last_result = res

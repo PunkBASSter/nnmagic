@@ -26,7 +26,7 @@ class LstmSampleGenerator:
 
         n = self._params.pred_N
         m = self._params.pred_M
-        self.results_shift_from_left_df = n + m
+        self.results_shift_from_left_df = n + m - 1
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
         df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
@@ -47,13 +47,13 @@ class LstmSampleGenerator:
         return smp_x, smp_y
 
     def add_output_list_to_df(self, lst:list, smp: str):
-        ln1 = len(lst)
-
         sample = self.samples_cached[smp]
-        ln2 = len(sample.Value.tolist())
+
+        #sample["NnRes"] = pd.Series(lst).values
+        #sample["ResInvTransformed"] = self._transform.inv_transform( sample.NnRes ).values
 
         left_padding = sample[self._params.data_normalized_column].iloc[0: self.results_shift_from_left_df].values
-        res_series = pd.Series(lst)
+        res_series = pd.Series(lst).iloc[0:].values
         sample["NnRes"] = np.r_[left_padding, res_series]
-        sample["ResInvTransformed"] = self._transform.inv_transform(sample["NnRes"])
+        sample["ResInvTransformed"] = self._transform.inv_transform(sample["NnRes"]).values
         return sample

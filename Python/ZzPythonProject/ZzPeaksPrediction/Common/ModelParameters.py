@@ -13,7 +13,7 @@ class ModelParameters:
     io_trained_model_file = io_folder + "Trained_Model_" + io_file_name_base + ".cmf"
 
     #Sample size parameters
-    data_validation_sample_part = 0.0
+    data_validation_sample_part = 0.1
     data_test_sample_part = 0.3
     data_timestamp_column = "Timestamp"
     data_value_column = "Value"

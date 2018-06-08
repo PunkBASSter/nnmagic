@@ -27,15 +27,17 @@ box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
 diff_transform = DiffTransform(DiffTransformParams())
 log_transform = LogTransform(LogTransformParams())
 shift_to_positive_transform = ShiftToPositiveTransform(ShiftToPositiveTransformParams())
-
 chained_transform = ChainedTransform(diff_transform, log_transform)
+no_transform = TransformBase()
 
-sample_generator = LstmSampleGenerator(params, chained_transform)
+transform = no_transform
+
+sample_generator = LstmSampleGenerator(params, transform)
 smp_x, smp_y = sample_generator.generate_samples()
 data_frames = sample_generator.samples_cached
 
 trainer = ModelTrainer(params)
-#trainer.train(smp_x["train"], smp_y["train"])
+trainer.train(smp_x["train"], smp_y["train"])
 trainer.load_model()
 
 z = trainer._z #load_model(params.io_trained_model_file)
@@ -43,84 +45,34 @@ z = trainer._z #load_model(params.io_trained_model_file)
 for labeltxt in ["train", "test"]:
     print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
 
-
 evaluator = ModelEvaluator(z, params)
+#f, a = plt.subplots(3, 1, figsize = (12, 8))
+#for j, ds in enumerate(["train", "val", "test"]):
+#    results = evaluator.evaluate(smp_x[ds])
+#    a[j].plot(smp_y[ds], label=ds + ' raw')
+#    a[j].plot(results, label=ds + ' predicted')
+#[i.legend() for i in a]
+#plt.show()
+
+
 eval_res = evaluator.evaluate(smp_x["test"])
 
 test_res = sample_generator.add_output_list_to_df(eval_res, "test")
 
+test_res["RestoredNormalized"]=transform.inv_transform(test_res.Normalized).values
 plt.figure(figsize=(15, 7))
 test_res.Value.plot()
 test_res.ResInvTransformed.plot()
-
-f, a = plt.subplots(3, 1, figsize = (12, 8))
-for j, ds in enumerate(["train", "val", "test"]):
-    results = evaluator.evaluate(smp_x[ds])
-    a[j].plot(smp_y[ds], label=ds + ' raw')
-    a[j].plot(results, label=ds + ' predicted')
-[i.legend() for i in a]
+test_res.RestoredNormalized.plot()
 
 
-
-#TODO Synchronize charts offsets for M > 1!
-#TODO Design interface for sample splitting, taking into account reverse transforms.
-
-plt.show()
+#TODO 1) Implement SCALE_TO_1 transform,
+#TODO 2) Resolve BOXCOX Index_Out_Of_Range! On Validation sample
+#TODO 3) FIND Out WHY DIFF + LOG LINEARLY FALLS
+#TODO 4) Implement SINUS sign extraction transform
+#TODO 5) USE Validation sample by Trainer during training
 
 print("ololo")
-
-#Illustrations
-#results = []
-#for x1, y1 in next_batch(X["test"], Y["test"], 1):
-#    pred = z.eval({z.arguments[0]: x1})
-#    results.extend(pred[:, 0])
-#
-#
-#predictedTest = []
-#import DataPreProcessing as dpp
-#rdat = rawSplitted["test"]
-#predictedTest.append(rdat[0])
-#for r in range(1, len(results)):
-#    val = dpp.calculateNextPeak(rdat[r-1], rdat[r], results[r])
-#    predictedTest.append(val)
-#
-#pos_test = len(Y["train"])+len(Y["val"]) + 2
-#full_input_data = pd.read_csv("data\\Normalized_DzzExportEURUSD.mPERIOD_H1.csv")
-#time = full_input_data["Timestamp"].values.tolist()
-#time = time[pos_test:pos_test+len(predictedTest)]
-##d = pd.DataFrame(dict(Timestamp=time,Predicted=predictedTest,Actual=rdat))
-##Write output
-#lines = [] #["Timestamp,Value,TimeDiffRatio,ValueDiffRatio,ValueDiffRatio_LogWithMaxAbsBase\n"]
-#for i in range(0, len(time)):
-#    lines.append(str(time[i])+","+str(predictedTest[i])+","+str(rdat[i])+'\n')
-#fh = open("data\\"+"Predictions.csv", 'wt')
-#fh.writelines(lines)
-
-
-
-#Fun with plots
-#fig = plt.figure()
-#ax0 = fig.add_subplot(311)
-#ax0.plot(rdat, label = 'Actual')
-#ax0.plot(predictedTest, label = 'Predicted')
-#ax0.grid(True)
-#
-#diff = []
-#for p in range(0, len(predictedTest)):
-#    diff.append(math.fabs(predictedTest[p]) - math.fabs(rdat[p]))
-#
-#import TradeEmulator as te
-#balance, trades = te.emulate_trading_on_series(N, rdat, predictedTest)
-#
-#ax2 = fig.add_subplot(312)
-#ax2.plot(balance)
-#ax2.grid(True)
-#ax3 = fig.add_subplot(313)
-#ax3.plot(trades)
-#ax3.grid(True)
-#
-#plt.show()
-
 
 #todo reconsider loss calculation
 
