@@ -3,19 +3,18 @@ import numpy as np
 from DataTransforms.TransformBase import TransformBase, TransformParams
 
 
-class ShiftToPositiveTransformParams(TransformParams):
-    extra_offset = 1.1
+class ValueShiftTransformParams( TransformParams ):
+    extra_offset = 1.01
     final_shift = 0
 
 
-class ShiftToPositiveTransform(TransformBase):
+class ValueShiftTransform( TransformBase ):
 
-    def __init__(self, params :ShiftToPositiveTransformParams):
+    def __init__(self, params :ValueShiftTransformParams):
         self.transform_params = params
 
     def transform(self, series: pd.Series):
-        shift = self._calc_shift(series)
-        res = series.values + shift
+        res = series.values + self._calc_shift(series)
         return pd.Series(res)
 
     def inv_transform(self, series: pd.Series):

@@ -11,7 +11,9 @@ from DataTransforms.TransformBase import TransformBase, TransformParams
 from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
 from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
 from DataTransforms.LogTransform import LogTransform, LogTransformParams
-from DataTransforms.ShiftToPositiveTransform import ShiftToPositiveTransform, ShiftToPositiveTransformParams
+from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
+from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
+
 from DataTransforms.ChainedTransform import ChainedTransform
 from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import StatsInfoTransformDecorator
 
@@ -26,18 +28,20 @@ M = params.pred_M
 box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
 diff_transform = DiffTransform(DiffTransformParams())
 log_transform = LogTransform(LogTransformParams())
-shift_to_positive_transform = ShiftToPositiveTransform(ShiftToPositiveTransformParams())
-chained_transform = ChainedTransform(diff_transform, log_transform)
+shift_transform = ValueShiftTransform( ValueShiftTransformParams() )
+scale_transform = ValueScaleTransform( ValueScaleTransformParams(target_abs_level=0.9) )
+
 no_transform = TransformBase()
 
-transform = no_transform
+chained_transform = ChainedTransform( diff_transform, shift_transform, scale_transform)
+transform = chained_transform
 
 sample_generator = LstmSampleGenerator(params, transform)
 smp_x, smp_y = sample_generator.generate_samples()
 data_frames = sample_generator.samples_cached
 
 trainer = ModelTrainer(params)
-trainer.train(smp_x["train"], smp_y["train"])
+#trainer.train(smp_x["train"], smp_y["train"])
 trainer.load_model()
 
 z = trainer._z #load_model(params.io_trained_model_file)
@@ -46,13 +50,13 @@ for labeltxt in ["train", "test"]:
     print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
 
 evaluator = ModelEvaluator(z, params)
-#f, a = plt.subplots(3, 1, figsize = (12, 8))
-#for j, ds in enumerate(["train", "val", "test"]):
-#    results = evaluator.evaluate(smp_x[ds])
-#    a[j].plot(smp_y[ds], label=ds + ' raw')
-#    a[j].plot(results, label=ds + ' predicted')
-#[i.legend() for i in a]
-#plt.show()
+f, a = plt.subplots(3, 1, figsize = (12, 8))
+for j, ds in enumerate(["train", "val", "test"]):
+    results = evaluator.evaluate(smp_x[ds])
+    a[j].plot(smp_y[ds], label=ds + ' raw')
+    a[j].plot(results, label=ds + ' predicted')
+[i.legend() for i in a]
+plt.show()
 
 
 eval_res = evaluator.evaluate(smp_x["test"])

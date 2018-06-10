@@ -5,7 +5,8 @@ from DataTransforms.TransformBase import TransformBase, TransformParams
 from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
 from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
 from DataTransforms.LogTransform import LogTransform, LogTransformParams
-from DataTransforms.ShiftToPositiveTransform import ShiftToPositiveTransform, ShiftToPositiveTransformParams
+from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
+from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
 from DataTransforms.ChainedTransform import ChainedTransform
 
 class TestsDataTransform(unittest.TestCase):
@@ -65,13 +66,15 @@ class TestsDataTransform(unittest.TestCase):
         self._steps_returned_type( LogTransform(LogTransformParams()) )
 
     def test_returned_type_shift(self):
-        self._steps_returned_type(ShiftToPositiveTransform(ShiftToPositiveTransformParams()))
+        self._steps_returned_type( ValueShiftTransform( ValueShiftTransformParams() ) )
 
-    #WARNING! ONLY First executed ChainedTransform Test Case passes!
+    def test_returned_type_scalse(self):
+        self._steps_returned_type( ValueScaleTransform( ValueScaleTransformParams() ) )
+
     def test_tr_chained_diff_shift_log(self):
-        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ShiftToPositiveTransform(ShiftToPositiveTransformParams()), LogTransform(LogTransformParams())), [2., 4., 8., 16., 32.])
+            self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ValueShiftTransform( ValueShiftTransformParams() ), LogTransform( LogTransformParams() ) ), [2., 4., 8., 16., 32.] )
     def test_tr_chained_diff_shiftNegative_log(self):
-        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ShiftToPositiveTransform(ShiftToPositiveTransformParams()), LogTransform(LogTransformParams())), [2., -4., 8., -16., 9.])
+        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ValueShiftTransform( ValueShiftTransformParams() ), LogTransform( LogTransformParams() ) ), [2., -4., 8., -16., 9.] )
 
     def test_tr_diff(self):
         self._steps_transform_reverse(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.])
@@ -79,7 +82,7 @@ class TestsDataTransform(unittest.TestCase):
         self._steps_transform_reverse(DiffTransform(DiffTransformParams(nan_replacement_value = 1)), [2., 4., 8., 16., 32.])
 
     def test_tr_shift(self):
-        self._steps_transform_reverse(ShiftToPositiveTransform(ShiftToPositiveTransformParams()), [2., 4., -8., -16., 32.])
+        self._steps_transform_reverse( ValueShiftTransform( ValueShiftTransformParams() ), [2., 4., -8., -16., 32.] )
 
     def test_tr_log(self):
         self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., 4., 8., 16., 32.])
@@ -89,15 +92,23 @@ class TestsDataTransform(unittest.TestCase):
 
     def test_tr_boxcox(self):
         self._steps_transform_reverse( BoxCoxTransform(BoxCoxTransformParams()), [2., 4., 8., 16., 32.] )
-#
+
+    def test_tr_scale(self):
+        self._steps_transform_reverse(ValueScaleTransform(ValueScaleTransformParams()), [2., 4., 8., 16., 32.])
+
     def test_returned_type_boxcox(self):
         self._steps_returned_type( BoxCoxTransform(BoxCoxTransformParams()))
-#
+
     def test_tr_chained_boxcox_diff(self):
         self._steps_transform_reverse( ChainedTransform( BoxCoxTransform(BoxCoxTransformParams()), DiffTransform(DiffTransformParams()) ), [2., 4., 8., 16., 32.] )
 
     def test_tr_chained_boxcox_diff_log(self):
-        self._steps_transform_reverse( ChainedTransform(DiffTransform(DiffTransformParams()), ShiftToPositiveTransform(ShiftToPositiveTransformParams()), BoxCoxTransform(BoxCoxTransformParams())),[2., 4., -8., -16., 4.])
+        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()), ValueShiftTransform( ValueShiftTransformParams() ), BoxCoxTransform( BoxCoxTransformParams() ) ), [2., 4., -8., -16., 4.] )
+
+    def test_tr_chained_diff_scale_shift(self):
+        self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()),
+                                                         ValueScaleTransform( ValueScaleTransformParams() ),
+                                                         ValueShiftTransform( ValueShiftTransformParams() ) ), [2., 4., -8., -16., 4.])
 
 if __name__ == '__main__':
     unittest.main()
