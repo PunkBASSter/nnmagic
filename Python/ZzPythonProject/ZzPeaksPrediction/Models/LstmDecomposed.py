@@ -33,7 +33,7 @@ scale_transform = ValueScaleTransform( ValueScaleTransformParams(target_abs_leve
 
 no_transform = TransformBase()
 
-chained_transform = ChainedTransform( diff_transform, shift_transform, scale_transform)
+chained_transform = ChainedTransform( diff_transform, shift_transform, log_transform)
 transform = chained_transform
 
 sample_generator = LstmSampleGenerator(params, transform)
@@ -41,7 +41,7 @@ smp_x, smp_y = sample_generator.generate_samples()
 data_frames = sample_generator.samples_cached
 
 trainer = ModelTrainer(params)
-#trainer.train(smp_x["train"], smp_y["train"])
+trainer.train(smp_x["train"], smp_y["train"])
 trainer.load_model()
 
 z = trainer._z #load_model(params.io_trained_model_file)
@@ -73,7 +73,7 @@ test_res.RestoredNormalized.plot()
 #TODO 1) Implement SCALE_TO_1 transform,
 #TODO 2) Resolve BOXCOX Index_Out_Of_Range! On Validation sample
 #TODO 3) FIND Out WHY DIFF + LOG LINEARLY FALLS
-#TODO 4) Implement SINUS sign extraction transform
+#TODO 4) Implement SINE sign extraction transform
 #TODO 5) USE Validation sample by Trainer during training
 
 print("ololo")

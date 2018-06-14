@@ -4,7 +4,7 @@ from DataTransforms.TransformBase import TransformBase, TransformParams
 
 
 class ValueShiftTransformParams( TransformParams ):
-    extra_offset = 1.01
+    extra_offset = 1.0
     final_shift = 0
 
 
