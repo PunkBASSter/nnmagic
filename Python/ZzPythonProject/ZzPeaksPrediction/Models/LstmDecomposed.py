@@ -41,7 +41,7 @@ smp_x, smp_y = sample_generator.generate_samples()
 data_frames = sample_generator.samples_cached
 
 trainer = ModelTrainer(params)
-trainer.train(smp_x["train"], smp_y["train"])
+#trainer.train(smp_x["train"], smp_y["train"])
 trainer.load_model()
 
 z = trainer._z #load_model(params.io_trained_model_file)
@@ -52,15 +52,24 @@ for labeltxt in ["train", "test"]:
 evaluator = ModelEvaluator(z, params)
 f, a = plt.subplots(3, 1, figsize = (12, 8))
 for j, ds in enumerate(["train", "val", "test"]):
-    results = evaluator.evaluate(smp_x[ds])
+    results = evaluator.evaluate(smp_x[ds],params.learn_batch_size)
     a[j].plot(smp_y[ds], label=ds + ' raw')
     a[j].plot(results, label=ds + ' predicted')
 [i.legend() for i in a]
 plt.show()
 
+#Divergence hypothesis testing
+train_eval_res = evaluator.evaluate(smp_x["train"])
+train_actual_res = sample_generator.add_output_list_to_df(train_eval_res, "train")
+train_eval_res["RestoredNormalized"]=transform.inv_transform(train_eval_res.Normalized).values
+plt.figure(figsize=(15, 7))
+train_eval_res.Value.plot()
+train_eval_res.ResInvTransformed.plot()
+train_eval_res.RestoredNormalized.plot()
+
+#Div_test_end
 
 eval_res = evaluator.evaluate(smp_x["test"])
-
 test_res = sample_generator.add_output_list_to_df(eval_res, "test")
 
 test_res["RestoredNormalized"]=transform.inv_transform(test_res.Normalized).values

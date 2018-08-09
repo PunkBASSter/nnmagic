@@ -22,7 +22,7 @@ class LstmSampleGenerator:
         # Loading, splitting and normalizing data
         print("Loading and preparing raw data.")
         df = pd.read_csv(self._params.io_input_data_file)
-        df.sort(self._params.data_timestamp_column)
+        df.sort_values(by=self._params.data_timestamp_column)
 
         n = self._params.pred_N
         m = self._params.pred_M

@@ -20,8 +20,8 @@ class ModelParameters:
     data_normalized_column = "Normalized"
 
     #Prediction settings
-    pred_N = 200  # input: N subsequent values
-    pred_M = 1  # output: predict 1 value M steps ahead
+    pred_N = 25  # input: N subsequent values
+    pred_M = 2  # output: predict 1 value M steps ahead
 
     #NN parameters
     nn_dropout = 0.15
