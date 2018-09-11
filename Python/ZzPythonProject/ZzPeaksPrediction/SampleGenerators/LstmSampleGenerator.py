@@ -46,10 +46,6 @@ class LstmSampleGenerator:
         smp_y = {"train": train__y, "val": val__y, "test": test__y}
         return smp_x, smp_y
 
-    def window_transform(self, series : pd.Series):
-        window_size = self._params.pred_N + self._params.pred_M
-        last_start_index = series.__len__() - 
-
     def add_output_list_to_df(self, lst:list, smp: str):
         sample = self.samples_cached[smp]
 

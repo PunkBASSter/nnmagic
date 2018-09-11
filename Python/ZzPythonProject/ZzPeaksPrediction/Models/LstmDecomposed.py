@@ -31,7 +31,7 @@ log_transform = LogTransform(LogTransformParams())
 shift_transform = ValueShiftTransform( ValueShiftTransformParams() )
 scale_transform = ValueScaleTransform( ValueScaleTransformParams(target_abs_level=0.9) )
 
-no_transform = TransformBase()
+#no_transform = TransformBase()
 
 chained_transform = ChainedTransform( diff_transform, shift_transform, log_transform)
 transform = chained_transform
@@ -59,13 +59,13 @@ for j, ds in enumerate(["train", "val", "test"]):
 plt.show()
 
 #Divergence hypothesis testing
-train_eval_res = evaluator.evaluate(smp_x["train"])
-train_actual_res = sample_generator.add_output_list_to_df(train_eval_res, "train")
-train_eval_res["RestoredNormalized"]=transform.inv_transform(train_eval_res).values
-plt.figure(figsize=(15, 7))
-train_eval_res.Value.plot()
-train_eval_res.ResInvTransformed.plot()
-train_eval_res.RestoredNormalized.plot()
+#train_eval_res = evaluator.evaluate(smp_x["train"])
+#train_actual_res = sample_generator.add_output_list_to_df(train_eval_res, "train")
+#train_eval_res["RestoredNormalized"]=transform.inv_transform(train_eval_res).values
+#plt.figure(figsize=(15, 7))
+#train_eval_res.Value.plot()
+#train_eval_res.ResInvTransformed.plot()
+#train_eval_res.RestoredNormalized.plot()
 
 #Div_test_end
 

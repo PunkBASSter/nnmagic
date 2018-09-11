@@ -10,7 +10,7 @@ class LogTransformParams(TransformParams):
 
 
 class LogTransform(TransformBase):
-    params: LogTransformParams
+    params : LogTransformParams
 
     def transform(self, series: pd.Series):
 
