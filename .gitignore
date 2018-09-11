@@ -33,3 +33,5 @@ packages/
 __pycache__*/
 .idea*/
 /Python/ZzPythonProject/.idea/cntk_tutorials.iml
+Python/ZzPythonProject/.idea/misc.xml
+Python/ZzPythonProject/.idea/cntk_tutorials.iml
