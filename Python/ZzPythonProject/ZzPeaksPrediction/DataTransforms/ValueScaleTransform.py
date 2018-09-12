@@ -23,6 +23,6 @@ class ValueScaleTransform(TransformBase):
         if not self.params.multiplier == 1:
             return self.params.multiplier
 
-        max_abs = max(abs(values.min()), values.max())
+        max_abs = max(abs(np.nanmin(values)), np.nanmax(values))
         self.params.multiplier = self.params.target_abs_level / max_abs
         return self.params.multiplier

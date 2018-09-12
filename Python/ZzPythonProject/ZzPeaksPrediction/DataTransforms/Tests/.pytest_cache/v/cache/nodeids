@@ -11,7 +11,6 @@
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_shiftNegative_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_shift_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_diff",
-  "TestsDataTransform.py::TestsDataTransform::test_tr_diff_with_nan_replacement",
   "TestsDataTransform.py::TestsDataTransform::test_tr_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_logNegative",
   "TestsDataTransform.py::TestsDataTransform::test_tr_scale",

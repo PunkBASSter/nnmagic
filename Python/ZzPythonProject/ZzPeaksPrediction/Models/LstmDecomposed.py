@@ -19,7 +19,6 @@ from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import Stats
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
-
 params = ModelParameters()
 
 N = params.pred_N

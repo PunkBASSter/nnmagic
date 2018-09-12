@@ -1,6 +1,7 @@
 from DataTransforms.TransformBase import TransformBase, TransformParams
 import math
 import pandas as pd
+import numpy as np
 
 
 class LogTransformParams(TransformParams):
@@ -14,12 +15,10 @@ class LogTransform(TransformBase):
 
     def transform(self, series: pd.Series):
 
-        inp_lst = series.tolist()
-
         if not self.params.log_base:
-            self.params.log_base = self._calc_log_base(inp_lst)
+            self.params.log_base = self._calc_log_base(series)
 
-        res_lst = self._calc_logs(inp_lst)
+        res_lst = self._calc_logs(series)
 
         return pd.Series(res_lst)
 
@@ -29,14 +28,19 @@ class LogTransform(TransformBase):
         res_lst = self._calc_exps(inp_lst, _log_base)
         return pd.Series(res_lst)
 
-    def _calc_log_base(self, lst):
-        log_base = max(abs(min(lst)), max(lst))
+    def _calc_log_base(self, series: pd.Series):
+        log_base = max(abs(np.nanmin(series)), np.nanmax(series))
         log_base = min(log_base, self.params.log_base_limit)
+        print(f"Calculated log base: {log_base}")
         return log_base
 
-    def _calc_logs(self, lst):
+    def _calc_logs(self, series):
         res = []
-        for l in lst:
+        for l in series.tolist():
+            if l == np.NaN:
+                res.append(l)
+                continue
+
             sign = -1 if l < 0 else 1
             res.append(math.log(abs(l), self.params.log_base) * sign)
         return res
@@ -45,6 +49,10 @@ class LogTransform(TransformBase):
         log_base = reverse_log_base
         res = []
         for l in lst:
+            if l == np.NaN:
+                res.append(l)
+                continue
+
             sign = -1 if l < 0 else 1
             res.append(math.pow(log_base, abs(l)) * sign)
         return res
