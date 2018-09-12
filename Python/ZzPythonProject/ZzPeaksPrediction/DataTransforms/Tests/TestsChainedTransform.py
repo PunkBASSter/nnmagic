@@ -10,7 +10,6 @@ from DataTransforms.ChainedTransform import ChainedTransform
 
 
 #not used :( doesn't work in test runs
-@pytest
 class TestsChainedTransform(TestsDataTransform):
 
     def test_tr_chained_diff_log(self):
