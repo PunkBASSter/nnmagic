@@ -4,6 +4,7 @@ import numpy as np
 from DataTransforms.TransformBase import TransformBase, TransformParams
 from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
 from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
+from DataTransforms.DivisionTransform import DivisionTransform, DivisionTransformParams
 from DataTransforms.LogTransform import LogTransform, LogTransformParams
 from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
 from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
@@ -62,6 +63,9 @@ class TestsDataTransform(unittest.TestCase):
     def test_returned_type_diff(self):
         self._steps_returned_type(DiffTransform(DiffTransformParams()))
 
+    def test_returned_type_division(self):
+        self._steps_returned_type(DivisionTransform(DivisionTransformParams()))
+
     def test_returned_type_log(self):
         self._steps_returned_type( LogTransform(LogTransformParams()) )
 
@@ -86,11 +90,14 @@ class TestsDataTransform(unittest.TestCase):
     def test_tr_diff(self):
         self._steps_transform_reverse(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.])
 
+    def test_tr_division(self):
+        self._steps_transform_reverse( DivisionTransform( DivisionTransformParams() ), [2., -4., 8., 16., 32.] )
+
     def test_tr_shift(self):
         self._steps_transform_reverse( ValueShiftTransform( ValueShiftTransformParams() ), [2., 4., -8., -16., 32.] )
 
     def test_tr_log(self):
-        self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., 4., -8., 16., 32.])
 
     def test_tr_logNegative(self):
         self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., -4., 8., 16., -32.])
@@ -99,7 +106,7 @@ class TestsDataTransform(unittest.TestCase):
         self._steps_transform_reverse( BoxCoxTransform(BoxCoxTransformParams()), [2., 4., 8., 16., 32.] )
 
     def test_tr_scale(self):
-        self._steps_transform_reverse(ValueScaleTransform(ValueScaleTransformParams()), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse(ValueScaleTransform(ValueScaleTransformParams()), [2., 4., -8., 16., 32.])
 
     def test_returned_type_boxcox(self):
         self._steps_returned_type( BoxCoxTransform(BoxCoxTransformParams()))
