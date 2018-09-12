@@ -1,3 +1,4 @@
 {
+  "TestsChainedTransform.py": true,
   "TestsDataTransform.py::TestsDataTransform::test_tr_diff_with_nan_replacement": true
 }

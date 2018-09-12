@@ -6,9 +6,6 @@ from DataTransforms.LeftShiftedTransformBase import LeftShiftedTransformBase, Le
 class DiffTransformParams(LeftShiftedTransformParams):
     """Only periods=1 is currently supported."""
     periods = 1
-    #first_origin_element = None
-    #nan_replacement_value = None
-    #last_result_series = None
 
 
 class DiffTransform(LeftShiftedTransformBase):
@@ -18,16 +15,6 @@ class DiffTransform(LeftShiftedTransformBase):
         self.params.last_input_series= series
         #self.params.first_origin_element = series.iloc[0:1].values[0]
         diff_series = series.diff(periods=self.params.periods)
-
-        #nan_replacement = self.params.nan_replacement_value
-        #if nan_replacement is None:
-        #    nan_replacement = result.iloc[1:2].tolist()[0]
-        #result.iloc[0:1] = nan_replacement
-
-        #self.params.shift_from_left = self._calc_shift(series)
-
-        #self.params.last_result_series = result
-        #result = diff_series.iloc[1:]
 
         return diff_series
 
