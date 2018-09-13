@@ -9,7 +9,7 @@ class DiffTransformParams(LeftShiftedTransformParams):
 
 
 class DiffTransform(LeftShiftedTransformBase):
-    params : DiffTransformParams()
+    params: DiffTransformParams()
 
     def transform(self, series):
         self.params.last_input_series = series

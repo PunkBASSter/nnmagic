@@ -20,13 +20,13 @@ class ValueShiftTransform(TransformBase):
         return pd.Series(res)
 
     def _calc_shift(self, series):
-        min = np.nanmin(series.values)
-        if min > 0:
+        minval = np.nanmin(series.values)
+        if minval > 0:
             self.params.final_shift = 0.
             return 0.
 
         if self.params.final_shift > 0:
             return self.params.final_shift
-        self.params.final_shift = np.abs(min) + self.params.extra_offset
+        self.params.final_shift = np.abs(minval) + self.params.extra_offset
 
         return self.params.final_shift

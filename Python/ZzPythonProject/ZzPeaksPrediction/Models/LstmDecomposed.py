@@ -27,8 +27,8 @@ M = params.pred_M
 box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
 diff_transform = DiffTransform(DiffTransformParams())
 log_transform = LogTransform(LogTransformParams())
-shift_transform = ValueShiftTransform( ValueShiftTransformParams() )
-scale_transform = ValueScaleTransform( ValueScaleTransformParams(target_abs_level=0.9) )
+shift_transform = ValueShiftTransform(ValueShiftTransformParams())
+scale_transform = ValueScaleTransform(ValueScaleTransformParams(target_abs_level=0.9))
 
 #no_transform = TransformBase()
 
