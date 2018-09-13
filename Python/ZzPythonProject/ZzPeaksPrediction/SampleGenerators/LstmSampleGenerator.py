@@ -29,7 +29,7 @@ class LstmSampleGenerator:
         self.results_shift_from_left_df = n + m - 1
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
-        df_train, df_val, df_test = dfhf.split_df_by_size( df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
+        df_train, df_val, df_test = dfhf.split_df_by_size(df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
 
         df_train[self._params.data_normalized_column] = self._transform.transform(df_train[self._params.data_value_column]).values
         df_val[self._params.data_normalized_column] = self._transform.transform(df_val[self._params.data_value_column]).values

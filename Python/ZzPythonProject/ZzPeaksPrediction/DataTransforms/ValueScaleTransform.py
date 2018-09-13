@@ -4,7 +4,7 @@ from DataTransforms.TransformBase import TransformBase, TransformParams
 
 
 class ValueScaleTransformParams(TransformParams):
-    target_abs_level = 10
+    target_abs_level = 1
     multiplier = 1
 
 
@@ -23,6 +23,6 @@ class ValueScaleTransform(TransformBase):
         if not self.params.multiplier == 1:
             return self.params.multiplier
 
-        max_abs = max(abs(np.nanmin(values)), np.nanmax(values))
+        max_abs = max(abs(np.nanmin(values)), abs(np.nanmax(values)))
         self.params.multiplier = self.params.target_abs_level / max_abs
         return self.params.multiplier
