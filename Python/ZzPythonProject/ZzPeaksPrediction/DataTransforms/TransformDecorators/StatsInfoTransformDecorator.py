@@ -14,7 +14,7 @@ class StatsInfoTransformDecorator(TransformBase):
         result = self._decorated_object.transform(series)
 
         print(type(self._decorated_object))
-        print(str(self._decorated_object.params))
+        print(str(self._decorated_object.params.__repr__()))
         print("\n")
         shf.is_normal(result)
         shf.is_stationary(result)
