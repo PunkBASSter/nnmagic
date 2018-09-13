@@ -49,7 +49,7 @@ for labeltxt in ["train", "test"]:
     print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
 
 evaluator = ModelEvaluator(z, params)
-f, a = plt.subplots(3, 1, figsize = (12, 8))
+f, a = plt.subplots(3, 1, figsize=(12, 8))
 for j, ds in enumerate(["train", "val", "test"]):
     results = evaluator.evaluate(smp_x[ds],params.learn_batch_size)
     a[j].plot(smp_y[ds], label=ds + ' raw')
@@ -60,7 +60,7 @@ plt.show()
 eval_res = evaluator.evaluate(smp_x["test"])
 test_res = sample_generator.add_output_list_to_df(eval_res, "test")
 
-test_res["RestoredNormalized"]=transform.inv_transform(test_res.Normalized).values
+test_res["RestoredNormalized"] = transform.inv_transform(test_res.Normalized).values
 plt.figure(figsize=(15, 7))
 test_res.Value.plot()
 test_res.ResInvTransformed.plot()
