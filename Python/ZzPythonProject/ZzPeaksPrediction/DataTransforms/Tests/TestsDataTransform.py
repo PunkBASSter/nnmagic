@@ -143,6 +143,11 @@ class TestsDataTransform(unittest.TestCase):
                                                          DivisionTransform( DivisionTransformParams())),
                                                          [2., 4., -8., -16., 4.])
 
+    def test_tr_chained_division_log(self):
+        self._steps_transform_reverse( ChainedTransform( DivisionTransform( DivisionTransformParams()),
+                                                         LogTransform( LogTransformParams() )),
+                                       [np.NaN, 2.0, -12., -8., 20.])
+
     def test_tr_chained_diff_division_log(self):
         self._steps_transform_reverse( ChainedTransform( DiffTransform(DiffTransformParams()),
                                                          DivisionTransform( DivisionTransformParams()),
