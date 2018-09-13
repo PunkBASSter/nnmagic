@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import math
 from DataTransforms.TransformBase import TransformBase, TransformParams
 
 class LeftShiftedTransformParams(TransformParams):
@@ -11,5 +12,5 @@ class LeftShiftedTransformBase(TransformBase):
 
     def get_last_nan_pos(self, series : pd.Series):
         for i in range(0, len(series)):
-            if not series[i] == np.NaN:
+            if not math.isnan(series[i]):
                 return i

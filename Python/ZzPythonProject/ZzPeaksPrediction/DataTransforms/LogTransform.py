@@ -54,5 +54,5 @@ class LogTransform(TransformBase):
                 continue
 
             sign = -1 if l < 0 else 1
-            res.append(math.pow(log_base, abs(l)) * sign)
+            res.append(log_base ** abs(l) * sign)
         return res
