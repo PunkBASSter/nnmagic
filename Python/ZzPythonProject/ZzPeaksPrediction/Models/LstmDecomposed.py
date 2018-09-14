@@ -27,12 +27,13 @@ box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
 diff_transform = DiffTransform(DiffTransformParams())
 div_transform = DivisionTransform(DivisionTransformParams())
 log_transform = LogTransform(LogTransformParams())
-shift_transform = ValueShiftTransform(ValueShiftTransformParams())
+shift_transform1 = ValueShiftTransform(ValueShiftTransformParams())
 scale_transform = ValueScaleTransform(ValueScaleTransformParams(target_abs_level=0.9))
+shift_transform2 = ValueShiftTransform(ValueShiftTransformParams())
 
 #no_transform = TransformBase()
 
-chained_transform = ChainedTransform(diff_transform, div_transform, shift_transform, log_transform)
+chained_transform = ChainedTransform(diff_transform, shift_transform1, div_transform, log_transform, shift_transform2, scale_transform)
 transform = chained_transform
 
 sample_generator = LstmSampleGenerator(params, transform)
@@ -40,7 +41,7 @@ smp_x, smp_y = sample_generator.generate_samples()
 data_frames = sample_generator.samples_cached
 
 trainer = ModelTrainer(params)
-#trainer.train(smp_x["train"], smp_y["train"])
+trainer.train(smp_x["train"], smp_y["train"])
 trainer.load_model()
 
 z = trainer._z #load_model(params.io_trained_model_file)

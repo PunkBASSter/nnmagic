@@ -28,7 +28,7 @@ shift_transform = ValueShiftTransform(ValueShiftTransformParams())
 
 scale_params = ValueScaleTransformParams(target_abs_level=1)
 scale_transform = ValueScaleTransform(scale_params)
-chain_transform = ChainedTransform(diff_transform, shift_transform, div_transform)#, log_transform1, shift_transform, scale_transform)
+chain_transform = ChainedTransform(diff_transform, shift_transform, div_transform, log_transform1, shift_transform, scale_transform)
 
 
 df = pd.read_csv(params.io_input_data_file)

@@ -1,3 +1,4 @@
+import pandas as pd
 from DataTransforms.TransformBase import TransformBase
 
 
@@ -12,6 +13,7 @@ class ChainedTransform(TransformBase):
 
 
     def transform(self, series):
+        series = pd.Series(series.values)
         length = len(self._transformation_sequence)
         if length < 2: raise ValueError("Sequence must contain at least 2 elements.")
 
