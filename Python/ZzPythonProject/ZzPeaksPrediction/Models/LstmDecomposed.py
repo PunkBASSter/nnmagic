@@ -12,7 +12,7 @@ from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
 from DataTransforms.LogTransform import LogTransform, LogTransformParams
 from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
 from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
-
+import pandas as pd
 from DataTransforms.ChainedTransform import ChainedTransform
 from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import StatsInfoTransformDecorator
 
@@ -37,6 +37,12 @@ chained_transform = ChainedTransform(diff_transform, shift_transform1, div_trans
 transform = chained_transform
 
 sample_generator = LstmSampleGenerator(params, transform)
+
+#DEBUGGING CRUTCH
+df = pd.read_csv( params.io_input_data_file )
+df.sort_values( by=params.data_timestamp_column )
+dbg_x, dbg_y = sample_generator.generate()#df.Value)
+
 smp_x, smp_y = sample_generator.generate_samples()
 data_frames = sample_generator.samples_cached
 

@@ -29,7 +29,7 @@ class DivisionTransform(LeftShiftedTransformBase):
         first_value_pos = self.get_last_nan_pos(series)
         calc_values = []
         res_series = pd.Series(data=last_input_series.iloc[0:first_value_pos])
-        for i in range(first_value_pos, len(last_input_series)):
+        for i in range(first_value_pos, len(series)):
             calc_values.append(last_input_series.values[i-1] * series.values[i])
 
         res_series = pd.concat([res_series, pd.Series(calc_values)], ignore_index=True)

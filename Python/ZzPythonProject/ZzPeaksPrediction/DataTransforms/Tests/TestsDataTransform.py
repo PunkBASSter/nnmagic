@@ -94,10 +94,9 @@ class TestsDataTransform(unittest.TestCase):
         self._steps_transform(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.], [np.NaN, 2., 4., 8., 16.])
 
     def test_inv_transform_diff(self):
-        initial_sequence = [2., 4., 8., 16., 32.]
         params = DiffTransformParams()
-        params.last_input_series = pd.Series(initial_sequence)
-        self._steps_inv_transform(DiffTransform(params), [np.NaN, 2., 4., 8., 16.], initial_sequence)
+        params.last_input_series = pd.Series([2., 4., 8., 16., 32.])
+        self._steps_inv_transform(DiffTransform(params), [np.NaN, 2., 4., 8., 16., 32], [2., 4., 8., 16., 32., 64])
 
     def test_tr_diff(self):
         self._steps_transform_reverse(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.])
@@ -109,10 +108,9 @@ class TestsDataTransform(unittest.TestCase):
                               [np.NaN, 2., 4., 8., 16.], [np.NaN, np.NaN, 2., 2., 2.])
 
     def test_inv_transform_division(self):
-        initial_sequence = [np.NaN, 2., 4., 8., 16.]
         params = DivisionTransformParams()
-        params.last_input_series = pd.Series(initial_sequence)
-        self._steps_inv_transform(DivisionTransform(params), [np.NaN, np.NaN, 2., 2., 2.], initial_sequence)
+        params.last_input_series = pd.Series([np.NaN, 2., 4., 8., 16.])
+        self._steps_inv_transform(DivisionTransform(params), [np.NaN, np.NaN, 2., 2., 2., 2.], [np.NaN, 2., 4., 8., 16., 32])
 
     def test_tr_division(self):
         self._steps_transform_reverse(DivisionTransform(DivisionTransformParams()), [np.NaN, 2.0, -12., -8., 20.])
@@ -133,6 +131,22 @@ class TestsDataTransform(unittest.TestCase):
         self._steps_transform_reverse(ValueScaleTransform(ValueScaleTransformParams()), [2., 4., -8., 16., 32.])
 
     # integration tests
+    def test_chained_diff_div(self):
+        diff_transform = DiffTransform( DiffTransformParams())
+        div_transform = DivisionTransform( DivisionTransformParams())
+        self._steps_transform( ChainedTransform( diff_transform, div_transform ), [2., 4., 8., 16., 32.],
+                               [np.NaN, np.NaN, 2., 2., 2.] )
+
+    def test_inv_chained_diff_div(self):
+        diff_params = DiffTransformParams()
+        diff_params.last_input_series = pd.Series( [2., 4., 8., 16., 32.] )
+        diff_transform = DiffTransform(diff_params)
+        div_params = DivisionTransformParams()
+        div_params.last_input_series = pd.Series( [np.NaN, 2., 4., 8., 16.] )
+        div_transform = DivisionTransform(div_params)
+        self._steps_inv_transform(ChainedTransform (diff_transform, div_transform), [np.NaN, np.NaN, 2., 2., 2., 2],
+                                      [2., 4., 8., 16., 32., 64])
+
     def test_tr_chained_diff_shift_log(self):
         self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
                                                        ValueShiftTransform(ValueShiftTransformParams()),
