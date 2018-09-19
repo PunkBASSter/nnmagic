@@ -3,12 +3,15 @@ import numpy as np
 import HelperFunctions.DataFrameHelperFunctions as dfhf
 from DataTransforms.TransformBase import TransformBase
 from Common.ModelParameters import ModelParameters
+import copy
 
 
 class LstmSampleGenerator:
     _transform = None
 
-    _params : ModelParameters() = None
+    _transforms = None
+
+    _params: ModelParameters() = None
 
     samples_cached = None
 
@@ -46,9 +49,8 @@ class LstmSampleGenerator:
 
     def generate(self):
         df = self.load_data()
-        data = pd.Series( df[self._params.data_value_column])
+        data = pd.Series(df[self._params.data_value_column])
         pre_res = self.repack_data(data)
-
 
         return pre_res
 
@@ -58,6 +60,13 @@ class LstmSampleGenerator:
         if not self._validate_df_shape( df ):
             raise ValueError( "Unexpected shape of Input DataFrame." )
         return df
+
+    def _clone_transforms(self, clones):
+        """Used for creating each new instance of transform for sequence."""
+        cloned_transforms = []
+        for i in range(0, clones):
+            cloned_transforms.append(copy.deepcopy(self._transform))
+        return cloned_transforms
 
     def _validate_df_shape(self, df: pd.DataFrame) -> bool:
         return df.shape[1] == 2 and df.shape[0] > df.shape[1]
@@ -74,6 +83,23 @@ class LstmSampleGenerator:
 
         rnn_x, rnn_y = np.array( rnn_x ), np.array( rnn_y )
         rnn_x = rnn_x.reshape( rnn_x.shape + (1,) )
+        # rnn_y = rnn_y.reshape(rnn_y.shape + (1,))
+        return rnn_x, rnn_y
+
+    def repack_transform_data(self, series: pd.Series):
+        x_len, y_len = self._params.pred_N, self._params.pred_M
+
+        last = series.__len__() - y_len + 1
+        rnn_x, rnn_y = [], []
+        self._transforms = self._clone_transforms(last - x_len)
+        for i in range(x_len, last):
+            trans_res = self._transforms[i-x_len].transform(series.iloc[i-x_len: i+y_len])
+
+            rnn_x.append( series.iloc[i - x_len: i].values )
+            rnn_y.append( series.iloc[i: i + y_len].values )
+
+        rnn_x, rnn_y = np.array(rnn_x), np.array(rnn_y)
+        rnn_x = rnn_x.reshape(rnn_x.shape + (1,))
         # rnn_y = rnn_y.reshape(rnn_y.shape + (1,))
         return rnn_x, rnn_y
 
