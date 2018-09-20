@@ -1,5 +1,6 @@
 {
   "TestsChainedTransform.py": true,
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_division_log": true,
-  "TestsDataTransform.py::TestsDataTransform::test_tr_diff_with_nan_replacement": true
+  "TestsDataTransform.py::TestsDataTransform::test_tr_diff_with_nan_replacement": true,
+  "TestsDataTransform.py::TestsDataTransform::test_tr_logNegative": true
 }

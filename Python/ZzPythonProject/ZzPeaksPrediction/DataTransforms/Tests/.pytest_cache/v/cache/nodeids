@@ -1,4 +1,6 @@
 [
+  "TestsDataTransform.py::TestsDataTransform::test_inv_transform_diff",
+  "TestsDataTransform.py::TestsDataTransform::test_inv_transform_division",
   "TestsDataTransform.py::TestsDataTransform::test_returned_type_boxcox",
   "TestsDataTransform.py::TestsDataTransform::test_returned_type_diff",
   "TestsDataTransform.py::TestsDataTransform::test_returned_type_division",
@@ -9,16 +11,17 @@
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_boxcox_diff",
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_boxcox_diff_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_division",
-  "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_division_log",
+  "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_division_shift_scale_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_scale_shift",
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_shiftNegative_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_chained_diff_shift_log",
+  "TestsDataTransform.py::TestsDataTransform::test_tr_chained_division_log",
   "TestsDataTransform.py::TestsDataTransform::test_tr_diff",
   "TestsDataTransform.py::TestsDataTransform::test_tr_division",
-  "TestsDataTransform.py::TestsDataTransform::test_tr_division_NaN",
   "TestsDataTransform.py::TestsDataTransform::test_tr_log",
-  "TestsDataTransform.py::TestsDataTransform::test_tr_logNegative",
-  "TestsDataTransform.py::TestsDataTransform::test_tr_log_NaN",
   "TestsDataTransform.py::TestsDataTransform::test_tr_scale",
-  "TestsDataTransform.py::TestsDataTransform::test_tr_shift"
+  "TestsDataTransform.py::TestsDataTransform::test_tr_shift",
+  "TestsDataTransform.py::TestsDataTransform::test_transform_diff",
+  "TestsDataTransform.py::TestsDataTransform::test_transform_division",
+  "TestsDataTransform.py::TestsDataTransform::test_transform_log"
 ]
