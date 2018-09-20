@@ -96,6 +96,13 @@ class LstmSampleGenerator:
         # rnn_y = rnn_y.reshape(rnn_y.shape + (1,))
         return rnn_x, rnn_y
 
+    def interpret_nn_data(self, sequence: pd.Series) -> pd.Series:
+        if isinstance(sequence, list):
+            sequence = pd.Series(sequence)
+
+        pass
+        # todo
+
     def add_output_list_to_df(self, lst:list, smp: str):
         sample = self.samples_cached[smp]
 
