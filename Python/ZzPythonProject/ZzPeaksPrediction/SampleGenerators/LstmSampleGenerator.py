@@ -7,9 +7,9 @@ import copy
 
 
 class LstmSampleGenerator:
-    _transform = None
+    _clean_transform_instance: TransformBase = None
 
-    _transforms = None
+    _last_used_transform: TransformBase = None
 
     _params: ModelParameters() = None
 
@@ -19,7 +19,7 @@ class LstmSampleGenerator:
 
     def __init__(self, params: ModelParameters, transform: TransformBase):
         self._params = params
-        self._transform = transform
+        self._clean_transform_instance = transform
 
     def generate_samples(self):
         # Loading, splitting and normalizing data
@@ -33,9 +33,9 @@ class LstmSampleGenerator:
         df_train, df_val, df_test = \
             dfhf.split_df_by_size(df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
 
-        df_train[self._params.data_normalized_column] = self._transform.transform(df_train[self._params.data_value_column]).values
-        df_val[self._params.data_normalized_column] = self._transform.transform(df_val[self._params.data_value_column]).values
-        df_test[self._params.data_normalized_column] = self._transform.transform(df_test[self._params.data_value_column]).values
+        df_train[self._params.data_normalized_column] = self._clean_transform_instance.transform(df_train[self._params.data_value_column]).values
+        df_val[self._params.data_normalized_column] = self._clean_transform_instance.transform(df_val[self._params.data_value_column]).values
+        df_test[self._params.data_normalized_column] = self._clean_transform_instance.transform(df_test[self._params.data_value_column]).values
 
         self.samples_cached = {"train": df_train, "val": df_val, "test": df_test}
 
@@ -61,13 +61,6 @@ class LstmSampleGenerator:
             raise ValueError( "Unexpected shape of Input DataFrame." )
         return df
 
-    def _clone_transforms(self, clones):
-        """Used for creating each new instance of transform for sequence."""
-        cloned_transforms = []
-        for i in range(0, clones):
-            cloned_transforms.append(copy.deepcopy(self._transform))
-        return cloned_transforms
-
     def _validate_df_shape(self, df: pd.DataFrame) -> bool:
         return df.shape[1] == 2 and df.shape[0] > df.shape[1]
 
@@ -87,16 +80,16 @@ class LstmSampleGenerator:
         return rnn_x, rnn_y
 
     def repack_transform_data(self, series: pd.Series):
+        """Repacks data with transformation saving the last used transform for reverse transformation"""
         x_len, y_len = self._params.pred_N, self._params.pred_M
 
         last = series.__len__() - y_len + 1
         rnn_x, rnn_y = [], []
-        self._transforms = self._clone_transforms(last - x_len)
+        self._last_used_transform = copy.deepcopy(self._clean_transform_instance)
         for i in range(x_len, last):
-            trans_res = self._transforms[i-x_len].transform(series.iloc[i-x_len: i+y_len])
-
-            rnn_x.append( series.iloc[i - x_len: i].values )
-            rnn_y.append( series.iloc[i: i + y_len].values )
+            trans_res = self._last_used_transform.transform(series.iloc[i-x_len: i+y_len])
+            rnn_x.append( trans_res.iloc[i - x_len: i].values )
+            rnn_y.append( trans_res.iloc[i: i + y_len].values )
 
         rnn_x, rnn_y = np.array(rnn_x), np.array(rnn_y)
         rnn_x = rnn_x.reshape(rnn_x.shape + (1,))
@@ -109,5 +102,5 @@ class LstmSampleGenerator:
         left_padding = sample[self._params.data_normalized_column].iloc[0: self.results_shift_from_left_df].values
         res_series = pd.Series(lst).iloc[0:].values
         sample["NnRes"] = np.r_[left_padding, res_series]
-        sample["ResInvTransformed"] = self._transform.inv_transform(sample["NnRes"]).values
+        sample["ResInvTransformed"] = self._clean_transform_instance.inv_transform(sample["NnRes"]).values
         return sample
