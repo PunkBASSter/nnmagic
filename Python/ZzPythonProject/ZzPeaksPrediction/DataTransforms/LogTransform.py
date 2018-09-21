@@ -31,5 +31,5 @@ class LogTransform(TransformBase):
     def _calc_log_base(self, series: pd.Series):
         log_base = max(abs(np.nanmin(series)), np.nanmax(series))
         log_base = min(log_base, self.params.log_base_limit)
-        print(f"Calculated log base: {log_base}")
+        #print(f"Calculated log base: {log_base}")
         return log_base

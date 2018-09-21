@@ -44,7 +44,8 @@ class DefaultSampleGenerator:
         m = self._params.pred_M
 
         print("Splitting DataFrame to Train/Validation/Test samples.")
-        df_train, df_val, df_test = dfhf.split_df_by_size(df, self._params.size_validation, self._params.size_test, n,
+        df_train, df_val, df_test = dfhf.split_df_by_size(df, self._params.data_validation_sample_part,
+                                                          self._params.data_test_sample_part, n,
                                                           self._normalizer.get_source_offset())
 
         self._last_df = df

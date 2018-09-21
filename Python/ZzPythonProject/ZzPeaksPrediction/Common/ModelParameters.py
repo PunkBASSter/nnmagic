@@ -14,7 +14,7 @@ class ModelParameters:
 
     #Sample size parameters
     data_validation_sample_part = 0.1
-    data_test_sample_part = 0.3
+    data_test_sample_part = 0.33
     data_timestamp_column = "Timestamp"
     data_value_column = "Value"
     data_normalized_column = "Normalized"

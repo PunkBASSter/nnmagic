@@ -8,14 +8,8 @@ import copy
 
 class LstmSampleGenerator:
     _clean_transform_instance: TransformBase = None
-
     _last_used_transform: TransformBase = None
-
     _params: ModelParameters() = None
-
-    samples_cached = None
-
-    results_shift_from_left_df = 0
 
     def __init__(self, params: ModelParameters, transform: TransformBase):
         self._params = params
@@ -23,12 +17,10 @@ class LstmSampleGenerator:
 
     def generate_samples(self):
         # Loading, splitting and normalizing data
-        df = pd.read_csv(self._params.io_input_data_file)
-        df.sort_values(by=self._params.data_timestamp_column)
+        df = self.load_data()
 
         n = self._params.pred_N
         m = self._params.pred_M
-        self.results_shift_from_left_df = n + m - 1
 
         df_train, df_val, df_test = \
             dfhf.split_df_by_size(df, self._params.data_validation_sample_part, self._params.data_test_sample_part, n, m)
@@ -36,8 +28,6 @@ class LstmSampleGenerator:
         df_train[self._params.data_normalized_column] = self._clean_transform_instance.transform(df_train[self._params.data_value_column]).values
         df_val[self._params.data_normalized_column] = self._clean_transform_instance.transform(df_val[self._params.data_value_column]).values
         df_test[self._params.data_normalized_column] = self._clean_transform_instance.transform(df_test[self._params.data_value_column]).values
-
-        self.samples_cached = {"train": df_train, "val": df_val, "test": df_test}
 
         train__x, train__y = dfhf.generate_data_by_df(df_train, n, m)
         val__x, val__y = dfhf.generate_data_by_df(df_val, n, m)
@@ -47,10 +37,11 @@ class LstmSampleGenerator:
         smp_y = {"train": train__y, "val": val__y, "test": test__y}
         return smp_x, smp_y
 
-    def generate(self):
+    def generate_with_own_transform(self):
         df = self.load_data()
         data = pd.Series(df[self._params.data_value_column])
-        pre_res = self.repack_data(data)
+
+        pre_res = self.compose_sample_from_raw_data(data)
 
         return pre_res
 
@@ -60,12 +51,14 @@ class LstmSampleGenerator:
         if not self._validate_df_shape( df ):
             raise ValueError( "Unexpected shape of Input DataFrame." )
         return df
-
     def _validate_df_shape(self, df: pd.DataFrame) -> bool:
         return df.shape[1] == 2 and df.shape[0] > df.shape[1]
 
-    def repack_data(self, series: pd.Series) -> [np.ndarray, np.ndarray]:
-        """Transforms input data to LSTM-compatible format."""
+    #TODO Merge COMPOSE methods based on passed transform
+    def compose_sample_from_prepared_data(self, series: pd.Series) -> [np.ndarray, np.ndarray]:
+        """
+        Composes LSTM-compatible input data structures extracted from normalized (prepared) series.
+        """
         x_len, y_len = self._params.pred_N, self._params.pred_M
 
         last = series.__len__() - y_len + 1
@@ -79,8 +72,11 @@ class LstmSampleGenerator:
         # rnn_y = rnn_y.reshape(rnn_y.shape + (1,))
         return rnn_x, rnn_y
 
-    def repack_transform_data(self, series: pd.Series):
-        """Repacks data with transformation saving the last used transform for reverse transformation"""
+    def compose_sample_from_raw_data(self, series: pd.Series) -> [np.ndarray, np.ndarray]:
+        """
+        Extracts LSTM-compatible input data structures from raw data performing transformation of each one
+        individually. Saves the last used transformation to allow the reverse operation.
+        """
         x_len, y_len = self._params.pred_N, self._params.pred_M
 
         last = series.__len__() - y_len + 1

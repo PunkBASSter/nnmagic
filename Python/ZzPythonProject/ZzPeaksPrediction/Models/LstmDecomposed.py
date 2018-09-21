@@ -75,6 +75,7 @@ test_res.RestoredNormalized.plot()
 
 #TODO 4) Implement SINE sign extraction transform
 #TODO 5) USE Validation sample by Trainer during training
+#TODO 6) NaN trimming transform
 
 print("ololo")
 
