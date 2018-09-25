@@ -14,7 +14,7 @@ from DataTransforms.ChainedTransform import ChainedTransform
 
 class TestsDataTransform(unittest.TestCase):
 
-    # Custom sequence assertions
+    # Custom sequenceXY assertions
     def assertCollectionsEqual(self, series1, series2, msg="Series are not equal, but should.", tolerance=0.0001):
         lst1 = series1.tolist()
         lst2 = series2.tolist()
@@ -57,14 +57,14 @@ class TestsDataTransform(unittest.TestCase):
         df = pd.DataFrame(data={'Timestamp': [1, 3, 4, 8, 15], 'Value': value_data})
         df["Transformed"] = inst.transform(df.Value)
 
-        self.assertTrue(len(df.Transformed.tolist()) > 0, "Transformed sequence length is not greater than 0")
+        self.assertTrue(len(df.Transformed.tolist()) > 0, "Transformed sequenceXY length is not greater than 0")
         self.assertCollectionNotNan(df.Transformed)
 
         self.assertCollectionsNotEqual(df.Value, df.Transformed,
-                                       "Initial sequence is equal to transformed. Transformation has no effect?")
+                                       "Initial sequenceXY is equal to transformed. Transformation has no effect?")
 
         df["Restored"] = inst.inv_transform(df.Transformed)
-        self.assertCollectionsEqual(df.Value, df.Restored, "Initial sequence is not equal to restored.")
+        self.assertCollectionsEqual(df.Value, df.Restored, "Initial sequenceXY is not equal to restored.")
 
     def _steps_returned_type(self, inst: TransformBase):
         df = pd.DataFrame(data={'Timestamp': [1, 3, 4, 8, 15], 'Value': [2., 4., 8., 16., 32.]})

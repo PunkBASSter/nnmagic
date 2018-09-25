@@ -13,7 +13,7 @@ class DivisionTransform(LeftShiftedTransformBase):
     def transform(self, series):
         self.params.last_input_series = series
 
-        first_value_pos = self.get_last_nan_pos(series)
+        first_value_pos = self.get_first_not_nan_pos( series )
         calc_values = []
         res_series = pd.Series(data=series.iloc[0:first_value_pos])
         res_series = pd.concat([res_series, pd.Series(np.NaN)])
@@ -26,7 +26,7 @@ class DivisionTransform(LeftShiftedTransformBase):
     def inv_transform(self, series):
         last_input_series = self.params.last_input_series
 
-        first_value_pos = self.get_last_nan_pos(series)
+        first_value_pos = self.get_first_not_nan_pos( series )
         calc_values = []
         res_series = pd.Series(data=last_input_series.iloc[0:first_value_pos])
         for i in range(first_value_pos, len(series)):
