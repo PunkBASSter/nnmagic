@@ -9,7 +9,7 @@ def pipe_server():
     pipe = win32pipe.CreateNamedPipe(
         r'\\.\pipe\PipesOfPiece',
         win32pipe.PIPE_ACCESS_DUPLEX,
-        win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_READMODE_MESSAGE | win32pipe.PIPE_WAIT,
+        win32pipe.PIPE_TYPE_BYTE | win32pipe.PIPE_READMODE_BYTE | win32pipe.PIPE_WAIT,
         1, 65536, 65536,
         0,
         None)
@@ -24,13 +24,15 @@ def pipe_server():
             content = win32file.ReadFile(pipe, 64*1024)[1]
 
             print( f"message: {content}" )
-            some_data = str.encode( f"{count}" )
+            some_data = str.encode( f"{count % 4},1.{count},1.{count-1},1.{count+1},1,1544543200," )
             win32file.WriteFile(pipe, some_data)
             #win32file.flush()
             #time.sleep(1)
             count += 1
 
         print("finished now")
+    #except:
+    #    pipe.send_error()
     finally:
         win32file.CloseHandle(pipe)
 
