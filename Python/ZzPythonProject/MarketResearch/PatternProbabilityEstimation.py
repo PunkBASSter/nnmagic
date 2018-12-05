@@ -44,6 +44,7 @@ def get_zone(std_cell_list : [], ind_func_res):
 result_df['zone'] = result_df.apply( lambda row: get_zone( [row[ki] for ki in std_band_cols], row[ind_value_col] ), axis=1 )
 
 print('Processing sequences')
+
 sequence_len = sequence_min_len #todo LOOP
 #Extracting Sequences for probability estimation
 seq_cols = [str(c) for c in range( sequence_len )]
@@ -51,7 +52,14 @@ seq_cols.reverse()
 for c in seq_cols:
     result_df[c] = result_df['zone'].shift(int(c))
 
-sequence_df = result_df.loc[ind_period -1 + bands_period-1 + sequence_len - 1:, seq_cols].loc[:, ::-1]
+zones = range(1, len(std_bands)+2)
+sequence_df = result_df.loc[ind_period -1 + bands_period-1 + sequence_len - 1:, seq_cols]#.loc[:, ::-1]
+plain_df = sequence_df.groupby(seq_cols).size().reset_index(name='count')
+plain_df['prob'] = plain_df['count'].div(sequence_df.count())
+grouped_df = plain_df.loc[:, seq_cols[:len(seq_cols)-1]].drop_duplicates(keep='first')
+
+for seq in grouped_df:
+    print("!")
 #sequence_df = sequence_df.groupby(sequence_df.columns.tolist()).size().reset_index(name='count')  #size().div(len_sequence_df)
 #sequence_df['probability'] = sequence_df.apply(lambda row: lambda :row['count']/sequence_df.size(), axis=1)
 prob_df = sequence_df
