@@ -36,12 +36,12 @@ def calc_indicator(data, ind_value_col, ind_period, bands_period, std_bands):
     visual_df = pd.DataFrame( data[[ind_value_col] + std_band_cols], index=data.index )
 
     print('Defining a zone based on bands where Indicator Value is located')
-    zoned_df = visual_df
+    zoned_df = pd.DataFrame( data[[ind_value_col] + std_band_cols], index=data.index )
     zoned_df['zone'] = zoned_df.apply( lambda row: get_zone( [row[ki] for ki in std_band_cols], row[ind_value_col] ), axis=1 )
     #add timestamps to zoned_df here
     return zoned_df, visual_df
 
-def process_sequences(inp_df, sequence_min_len, sequence_max_len, std_bands, ind_period, bands_period):
+def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, bands_period):
     print('Processing sequences...')
     final_columns = []
     tmp_dfs = []
@@ -61,7 +61,7 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, std_bands, ind
 
     prob_res = tmp_dfs[tmp_dfs.__len__()-1]
     for df_ix in range(tmp_dfs.__len__()-2,-1,-1):
-        prob_res = prob_res.append(tmp_dfs[df_ix], ignore_index=True)
+        prob_res = prob_res.append(tmp_dfs[df_ix], ignore_index=True, sort=True)
 
     prob_res = prob_res[final_columns + ['count', 'prob']]
     prob_res = prob_res.fillna(0)
@@ -82,10 +82,10 @@ if __name__ == '__main__':
     with open(settings_file_name, 'r') as f:
         config = json.load(f)
 
-    path = config["path"]
+    input_folder = config["input_folder"] # C:\\Users\\PunkBASSter\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\
     file_name = config["file_name"]
     columns_to_take = config["columns_to_take"]
-    #out_path = config["out_path"]
+    output_folder = config["output_folder"]
     out_file_name_prefix = config["out_file_name_prefix"]
     calculations_file_name_prefix = config["calculations_file_name_prefix"]
     ind_period = config["ind_period"]
@@ -97,30 +97,34 @@ if __name__ == '__main__':
     plot_indicator = config["plot_indicator"]
     save_calculations = config["save_calculations"]
 
-    df = read_csv(file_path=path+file_name,columns_to_take=columns_to_take)
+    df = read_csv(file_path=input_folder + file_name, columns_to_take=columns_to_take)
 
-    ind_df, visual_df = calc_indicator(data=df,
+    ind_df, vis_df = calc_indicator(data=df,
                                        ind_value_col=indicator_name,
                                        ind_period=ind_period,
                                        bands_period=bands_period,
                                        std_bands=std_bands)
 
     if save_calculations:
-        ind_df.to_csv(f'{path}{calculations_file_name_prefix}{indicator_name}{file_name}')
+        fname = f'{output_folder}{calculations_file_name_prefix}_{indicator_name}_{file_name}'
+        print(f'Writing file {fname}')
+        ind_df.to_csv(fname)
 
     probability_df = process_sequences(inp_df=ind_df,
                                        sequence_min_len=sequence_min_len,
                                        sequence_max_len=sequence_max_len,
-                                       std_bands=std_bands,
                                        ind_period=ind_period,
                                        bands_period=bands_period)
 
-    probability_df.to_csv()
+    fname = f'{output_folder}{out_file_name_prefix}_{indicator_name}_{file_name}'
+    probability_df.to_csv(fname)
+    print(f'Writing file {fname}')
 
     if plot_indicator:
         print("Plotting indicator...")
-        plt.figure()
-        visual_df.plot(f'{path}{out_file_name_prefix}{indicator_name}{file_name}')
+        #plt.figure()
+        vis_df.plot()
+        plt.show()
+        print('Press enter to end.')
+        a = sys.stdin.readline()
 
-
-    print('End.')

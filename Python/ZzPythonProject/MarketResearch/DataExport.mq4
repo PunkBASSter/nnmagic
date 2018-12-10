@@ -42,7 +42,7 @@ void OnStart()
 
 int OpenFile()
 {
-   string fileName = OutputFileNameBase + "_" + Symbol() + "_" + EnumToString((ENUM_TIMEFRAMES)Period()) + ".csv";
+   string fileName = OutputFileNameBase + Symbol() + "_" + EnumToString((ENUM_TIMEFRAMES)Period()) + ".csv";
    
    int handle = FileOpen(fileName,FILE_WRITE|FILE_COMMON|FILE_ANSI);
    if(handle == INVALID_HANDLE)
