@@ -12,5 +12,7 @@
   "sequence_min_len" : 3,
   "sequence_max_len" : 5,
   "plot_indicator" : true,
-  "save_calculations" : true
+  "save_calculations" : true,
+  "float_precision" : 6,
+  "csv_separator" : ","
 }

@@ -96,6 +96,8 @@ if __name__ == '__main__':
     sequence_max_len = config["sequence_max_len"]
     plot_indicator = config["plot_indicator"]
     save_calculations = config["save_calculations"]
+    float_precision = config["float_precision"]
+    csv_separator = config["csv_separator"]
 
     df = read_csv(file_path=input_folder + file_name, columns_to_take=columns_to_take)
 
@@ -108,7 +110,7 @@ if __name__ == '__main__':
     if save_calculations:
         fname = f'{output_folder}{calculations_file_name_prefix}_{indicator_name}_{file_name}'
         print(f'Writing file {fname}')
-        ind_df.to_csv(fname)
+        ind_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
 
     probability_df = process_sequences(inp_df=ind_df,
                                        sequence_min_len=sequence_min_len,
@@ -117,7 +119,7 @@ if __name__ == '__main__':
                                        bands_period=bands_period)
 
     fname = f'{output_folder}{out_file_name_prefix}_{indicator_name}_{file_name}'
-    probability_df.to_csv(fname)
+    probability_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
     print(f'Writing file {fname}')
 
     if plot_indicator:
@@ -125,6 +127,6 @@ if __name__ == '__main__':
         #plt.figure()
         vis_df.plot()
         plt.show()
-        print('Press enter to end.')
+        print('Close plot and press enter to end.')
         a = sys.stdin.readline()
 
