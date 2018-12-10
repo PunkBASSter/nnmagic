@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import math
 import datetime
 import numpy as np
+import json
 
 #Expected Input file format: "timestamp,open,high,low,close,tick_volume,spread,real_volume\n"
 
@@ -14,11 +15,14 @@ def get_zone(std_cell_list : [], ind_func_res):
             return i+1
     return bands_total + 1 if not math.isnan(std_cell_list[bands_total-1]) else math.nan
 
-columns_to_take = ['timestamp', 'open', 'close']
-def calc_indicator(path, file_name, ind_value_col, ind_period, bands_period, std_bands):
+def read_csv(file_path, columns_to_take):
+    print(f'Trying to read Columns: {columns_to_take} from history CSV {file_path}')
+    data = pd.read_csv( file_path )[columns_to_take]
+    return data
+
+def calc_indicator(data, ind_value_col, ind_period, bands_period, std_bands):
     print('Filling DataFrame with basic data, Indicator Values, MA, STD')
 
-    data = pd.read_csv(path+file_name)[columns_to_take]
     data['date'] = data.timestamp.apply(datetime.datetime.fromtimestamp)
     data[ind_value_col] = (data.close - data.open).rolling( ind_period).mean()
     data['ma'] = data[ind_value_col].rolling( bands_period ).mean()
@@ -29,18 +33,15 @@ def calc_indicator(path, file_name, ind_value_col, ind_period, bands_period, std
         data[f'Std_{k}'] = data['ma'] + data['std'].multiply(k)
     std_band_cols = [f'Std_{k}' for k in std_bands] #Bands column headers
 
-    result_df = pd.DataFrame( data[[ind_value_col] + std_band_cols], index=data.index )
-
-    def visualize(df):
-        plt.figure()
-        df.plot()
-    #visualize(result_df)
+    visual_df = pd.DataFrame( data[[ind_value_col] + std_band_cols], index=data.index )
 
     print('Defining a zone based on bands where Indicator Value is located')
-    result_df['zone'] = result_df.apply( lambda row: get_zone( [row[ki] for ki in std_band_cols], row[ind_value_col] ), axis=1 )
-    return result_df
+    zoned_df = visual_df
+    zoned_df['zone'] = zoned_df.apply( lambda row: get_zone( [row[ki] for ki in std_band_cols], row[ind_value_col] ), axis=1 )
+    #add timestamps to zoned_df here
+    return zoned_df, visual_df
 
-def process_sequences(result_df, sequence_min_len, sequence_max_len, std_bands, ind_period, bands_period):
+def process_sequences(inp_df, sequence_min_len, sequence_max_len, std_bands, ind_period, bands_period):
     print('Processing sequences...')
     final_columns = []
     tmp_dfs = []
@@ -49,10 +50,10 @@ def process_sequences(result_df, sequence_min_len, sequence_max_len, std_bands, 
         seq_cols = [str(c) for c in range( seq_len )]
         seq_cols.reverse()
         for c in seq_cols:
-            result_df[c] = result_df['zone'].shift(int(c))
+            inp_df[c] = inp_df['zone'].shift( int( c ) )
         final_columns = seq_cols
         #zones = range(1, len(std_bands)+2)
-        sequence_df = result_df.loc[ind_period -1 + bands_period-1 + seq_len - 1:, seq_cols]
+        sequence_df = inp_df.loc[ind_period - 1 + bands_period - 1 + seq_len - 1:, seq_cols]
         sequence_df = sequence_df.astype(int)
         plain_df = sequence_df.groupby(seq_cols).size().reset_index(name='count')
         plain_df['prob'] = plain_df['count'].div(sequence_df.__len__())
@@ -69,17 +70,57 @@ def process_sequences(result_df, sequence_min_len, sequence_max_len, std_bands, 
 
     return prob_res
 
+
+
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-       print("Required config path.")
+    settings_file_name = "Settings.json"
+    if len(sys.argv) > 1:
+        settings_file_name = sys.argv[1]
+    else:
+        print("Taking default settings file")
 
-    ind_df = calc_indicator()
+    with open(settings_file_name, 'r') as f:
+        config = json.load(f)
 
-    probability_df = process_sequences(ind_df)
+    path = config["path"]
+    file_name = config["file_name"]
+    columns_to_take = config["columns_to_take"]
+    #out_path = config["out_path"]
+    out_file_name_prefix = config["out_file_name_prefix"]
+    calculations_file_name_prefix = config["calculations_file_name_prefix"]
+    ind_period = config["ind_period"]
+    bands_period = config["bands_period"]
+    std_bands = config["std_bands"]
+    indicator_name = config["indicator_name"]
+    sequence_min_len = config["sequence_min_len"]
+    sequence_max_len = config["sequence_max_len"]
+    plot_indicator = config["plot_indicator"]
+    save_calculations = config["save_calculations"]
 
-    #elif sys.argv[1] == "c":
-    #   pipe_client()
-    #else:
-    #   print(f"no can do: {sys.argv[1]}")
+    df = read_csv(file_path=path+file_name,columns_to_take=columns_to_take)
 
-    print('end')
+    ind_df, visual_df = calc_indicator(data=df,
+                                       ind_value_col=indicator_name,
+                                       ind_period=ind_period,
+                                       bands_period=bands_period,
+                                       std_bands=std_bands)
+
+    if save_calculations:
+        ind_df.to_csv(f'{path}{calculations_file_name_prefix}{indicator_name}{file_name}')
+
+    probability_df = process_sequences(inp_df=ind_df,
+                                       sequence_min_len=sequence_min_len,
+                                       sequence_max_len=sequence_max_len,
+                                       std_bands=std_bands,
+                                       ind_period=ind_period,
+                                       bands_period=bands_period)
+
+    probability_df.to_csv()
+
+    if plot_indicator:
+        print("Plotting indicator...")
+        plt.figure()
+        visual_df.plot(f'{path}{out_file_name_prefix}{indicator_name}{file_name}')
+
+
+    print('End.')
