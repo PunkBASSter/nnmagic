@@ -24,7 +24,7 @@ def calc_indicator(data, ind_value_col, ind_period, bands_period, std_bands):
     print('Filling DataFrame with basic data, Indicator Values, MA, STD')
 
     data['date'] = data.timestamp.apply(datetime.datetime.fromtimestamp)
-    data[ind_value_col] = (data.close - data.open).rolling( ind_period).mean()
+    data[ind_value_col] = (data.close - data.open).rolling( ind_period ).mean()
     data['ma'] = data[ind_value_col].rolling( bands_period ).mean()
     data['std'] = data[ind_value_col].rolling( bands_period ).std()
 
@@ -36,7 +36,7 @@ def calc_indicator(data, ind_value_col, ind_period, bands_period, std_bands):
     visual_df = pd.DataFrame( data[[ind_value_col] + std_band_cols], index=data.index )
 
     print('Defining a zone based on bands where Indicator Value is located')
-    zoned_df = pd.DataFrame( data[[ind_value_col] + std_band_cols], index=data.index )
+    zoned_df = pd.DataFrame( visual_df )
     zoned_df['zone'] = zoned_df.apply( lambda row: get_zone( [row[ki] for ki in std_band_cols], row[ind_value_col] ), axis=1 )
     #add timestamps to zoned_df here
     return zoned_df, visual_df
@@ -47,10 +47,10 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, ba
     tmp_dfs = []
     for seq_len in range (sequence_min_len, sequence_max_len+1):
         print(f'Processing with length: {seq_len} of possible {sequence_min_len}-{sequence_max_len} range.')
-        seq_cols = [str(c) for c in range( seq_len )]
-        seq_cols.reverse()
-        for c in seq_cols:
-            inp_df[c] = inp_df['zone'].shift( int( c ) )
+        seq_cols = [f'Seq_{c}' for c in range( seq_len )]
+        #seq_cols.reverse()
+        for i in range(seq_cols.__len__()):
+            inp_df[seq_cols[i]] = pd.Series(inp_df['zone']).shift(i)
         final_columns = seq_cols
         #zones = range(1, len(std_bands)+2)
         sequence_df = inp_df.loc[ind_period - 1 + bands_period - 1 + seq_len - 1:, seq_cols]
@@ -61,8 +61,9 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, ba
 
     prob_res = tmp_dfs[tmp_dfs.__len__()-1]
     for df_ix in range(tmp_dfs.__len__()-2,-1,-1):
-        prob_res = prob_res.append(tmp_dfs[df_ix], ignore_index=True, sort=True)
+        prob_res = prob_res.append(tmp_dfs[df_ix], ignore_index=True)
 
+    final_columns.reverse()
     prob_res = prob_res[final_columns + ['count', 'prob']]
     prob_res = prob_res.fillna(0)
     for c in final_columns:
@@ -98,6 +99,8 @@ if __name__ == '__main__':
     save_calculations = config["save_calculations"]
     float_precision = config["float_precision"]
     csv_separator = config["csv_separator"]
+
+
 
     df = read_csv(file_path=input_folder + file_name, columns_to_take=columns_to_take)
 
