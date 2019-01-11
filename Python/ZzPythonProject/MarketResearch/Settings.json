@@ -1,6 +1,6 @@
 {
-  "input_folder" : "C:\\Users\\PunkBASSter\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\",
-  "file_name" : "_EURUSD_PERIOD_D1.csv",
+  "input_folder" : "",
+  "file_name" : "Rates_EURUSD_PERIOD_H1.csv",
   "columns_to_take" : ["timestamp", "open", "close"],
   "output_folder" : "",
   "out_file_name_prefix" : "Prob",
@@ -9,10 +9,10 @@
   "bands_period" : 12,
   "std_bands" : [-2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5],
   "indicator_name" : "Body",
-  "sequence_min_len" : 1,
-  "sequence_max_len" : 1,
+  "sequence_min_len" : 2,
+  "sequence_max_len" : 4,
   "plot_indicator" : true,
   "save_calculations" : false,
-  "float_precision" : 6,
+  "float_precision" : 3,
   "csv_separator" : ","
 }

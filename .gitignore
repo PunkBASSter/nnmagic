@@ -36,3 +36,4 @@ __pycache__*/
 .pytest_cache/
 Python/ZzPythonProject/MarketResearch/EURUSD_PERIOD_H1.csv
 venv/
+/Python/ZzPythonProject/MarketResearch/.ipynb_checkpoints/NotebookPatternProb-checkpoint.ipynb

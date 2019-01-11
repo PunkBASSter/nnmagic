@@ -55,16 +55,19 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, ba
         #zones = range(1, len(std_bands)+2)
         sequence_df = inp_df.loc[ind_period - 1 + bands_period - 1 + seq_len - 1:, seq_cols]
         sequence_df = sequence_df.astype(int)
-        plain_df = sequence_df.groupby(seq_cols).size().reset_index(name='count')
-        plain_df['prob'] = plain_df['count'].div(sequence_df.__len__())
-        tmp_dfs.append(plain_df)
+        common_cols = seq_cols[1:]
+        dfp = sequence_df.groupby(common_cols).size().reset_index(name='pre_count')
+        dfr = sequence_df.groupby(seq_cols).size().reset_index(name='fact_count')
+        dfc = pd.merge(dfr, dfp, how='outer', on=common_cols)
+        dfc['prob'] = dfc['fact_count'].div(dfc['pre_count'])
+        tmp_dfs.append(dfc)
 
     prob_res = tmp_dfs[tmp_dfs.__len__()-1]
     for df_ix in range(tmp_dfs.__len__()-2,-1,-1):
         prob_res = prob_res.append(tmp_dfs[df_ix], ignore_index=True)
 
     final_columns.reverse()
-    prob_res = prob_res[final_columns + ['count', 'prob']]
+    prob_res = prob_res[final_columns + ['fact_count', 'pre_count', 'prob']]
     prob_res = prob_res.fillna(0)
     for c in final_columns:
         prob_res[c] = prob_res[c].astype(int)
