@@ -6,7 +6,7 @@ class ChainedTransform(TransformBase):
 
     _transformation_sequence = None
 
-    def __init__(self, *args: TransformBase):
+    def __init__(self, *args):
         self._transformation_sequence = []
         for arg in args:
             self._transformation_sequence.append(arg)

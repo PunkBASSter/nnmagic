@@ -5,7 +5,6 @@ from DataTransforms.TransformBase import TransformBase, TransformParams
 
 
 class LeftShiftedTransformParams(TransformParams):
-    """Only periods=1 is currently supported."""
     last_input_series: pd.Series
 
 

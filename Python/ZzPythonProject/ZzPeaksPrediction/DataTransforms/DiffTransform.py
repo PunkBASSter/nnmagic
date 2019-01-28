@@ -5,8 +5,7 @@ from DataTransforms.LeftShiftedTransformBase import LeftShiftedTransformBase, Le
 
 class DiffTransformParams(LeftShiftedTransformParams):
     """Only periods=1 is currently supported."""
-    periods = 1
-
+    periods=1
 
 class DiffTransform(LeftShiftedTransformBase):
     params: DiffTransformParams()
