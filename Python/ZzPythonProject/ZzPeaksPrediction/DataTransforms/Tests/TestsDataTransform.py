@@ -2,13 +2,13 @@ import unittest
 import pandas as pd
 import numpy as np
 import math
-from DataTransforms.TransformBase import TransformBase, TransformParams
-from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
-from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
-from DataTransforms.DivisionTransform import DivisionTransform, DivisionTransformParams
-from DataTransforms.LogTransform import LogTransform, LogTransformParams
-from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
-from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
+from DataTransforms.TransformBase import TransformBase
+from DataTransforms.BoxCoxTransform import BoxCoxTransform
+from DataTransforms.DiffTransform import DiffTransform
+from DataTransforms.DivisionTransform import DivisionTransform
+from DataTransforms.LogTransform import LogTransform
+from DataTransforms.ValueShiftTransform import ValueShiftTransform
+from DataTransforms.ValueScaleTransform import ValueScaleTransform
 from DataTransforms.ChainedTransform import ChainedTransform
 
 
@@ -75,125 +75,123 @@ class TestsDataTransform(unittest.TestCase):
 
     # unit tests for returned types
     def test_returned_type_diff(self):
-        self._steps_returned_type(DiffTransform(DiffTransformParams()))
+        self._steps_returned_type(DiffTransform())
 
     def test_returned_type_division(self):
-        self._steps_returned_type(DivisionTransform(DivisionTransformParams()))
+        self._steps_returned_type(DivisionTransform())
 
     def test_returned_type_log(self):
-        self._steps_returned_type(LogTransform(LogTransformParams()))
+        self._steps_returned_type(LogTransform())
 
     def test_returned_type_shift(self):
-        self._steps_returned_type(ValueShiftTransform(ValueShiftTransformParams()))
+        self._steps_returned_type(ValueShiftTransform())
 
     def test_returned_type_scalse(self):
-        self._steps_returned_type(ValueScaleTransform(ValueScaleTransformParams()))
+        self._steps_returned_type(ValueScaleTransform())
 
     # transform classes unit tests
     def test_transform_diff(self):
-        self._steps_transform(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.], [np.NaN, 2., 4., 8., 16.])
+        self._steps_transform(DiffTransform(), [2., 4., 8., 16., 32.], [np.NaN, 2., 4., 8., 16.])
 
     def test_inv_transform_diff(self):
-        params = DiffTransformParams()
-        params.last_input_series = pd.Series([2., 4., 8., 16., 32.])
-        self._steps_inv_transform(DiffTransform(params), [np.NaN, 2., 4., 8., 16., 32], [2., 4., 8., 16., 32., 64])
+        dt = DiffTransform()
+        dt.last_input_series = pd.Series([2., 4., 8., 16., 32.])
+        self._steps_inv_transform(dt, [np.NaN, 2., 4., 8., 16., 32], [2., 4., 8., 16., 32., 64])
 
     def test_tr_diff(self):
-        self._steps_transform_reverse(DiffTransform(DiffTransformParams()), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse(DiffTransform(), [2., 4., 8., 16., 32.])
 
     #def test_division
 
     def test_transform_division(self):
-        self._steps_transform(DivisionTransform(DivisionTransformParams()),
+        self._steps_transform(DivisionTransform(),
                               [np.NaN, 2., 4., 8., 16.], [np.NaN, np.NaN, 2., 2., 2.])
 
     def test_inv_transform_division(self):
-        params = DivisionTransformParams()
-        params.last_input_series = pd.Series([np.NaN, 2., 4., 8., 16.])
-        self._steps_inv_transform(DivisionTransform(params), [np.NaN, np.NaN, 2., 2., 2., 2.], [np.NaN, 2., 4., 8., 16., 32])
+        dt = DivisionTransform()
+        dt.last_input_series = pd.Series([np.NaN, 2., 4., 8., 16.])
+        self._steps_inv_transform(dt, [np.NaN, np.NaN, 2., 2., 2., 2.], [np.NaN, 2., 4., 8., 16., 32])
 
     def test_tr_division(self):
-        self._steps_transform_reverse(DivisionTransform(DivisionTransformParams()), [np.NaN, 2.0, -12., -8., 20.])
+        self._steps_transform_reverse(DivisionTransform(), [np.NaN, 2.0, -12., -8., 20.])
 
     def test_tr_shift(self):
-        self._steps_transform_reverse(ValueShiftTransform(ValueShiftTransformParams()), [2., 4., -8., -16., 32.])
+        self._steps_transform_reverse(ValueShiftTransform(), [2., 4., -8., -16., 32.])
 
     def test_transform_log(self):
-        self._steps_transform(LogTransform(LogTransformParams()), [np.NaN, 2, 1, 2], [np.NaN, 1, 0, 1])
+        self._steps_transform(LogTransform(), [np.NaN, 2, 1, 2], [np.NaN, 1, 0, 1])
 
     def test_tr_log(self):
-        self._steps_transform_reverse(LogTransform(LogTransformParams()), [2., 4., 5., 0.5, 3.])
+        self._steps_transform_reverse(LogTransform(), [2., 4., 5., 0.5, 3.])
 
     def test_tr_boxcox(self):
-        self._steps_transform_reverse(BoxCoxTransform(BoxCoxTransformParams()), [2., 4., 8., 16., 32.])
+        self._steps_transform_reverse(BoxCoxTransform(), [2., 4., 8., 16., 32.])
 
     def test_tr_scale(self):
-        self._steps_transform_reverse(ValueScaleTransform(ValueScaleTransformParams()), [2., 4., -8., 16., 32.])
+        self._steps_transform_reverse(ValueScaleTransform(), [2., 4., -8., 16., 32.])
 
     # integration tests
     def test_chained_diff_div(self):
-        diff_transform = DiffTransform( DiffTransformParams())
-        div_transform = DivisionTransform( DivisionTransformParams())
+        diff_transform = DiffTransform( )
+        div_transform = DivisionTransform( )
         self._steps_transform( ChainedTransform( diff_transform, div_transform ), [2., 4., 8., 16., 32.],
                                [np.NaN, np.NaN, 2., 2., 2.] )
 
     def test_inv_chained_diff_div(self):
-        diff_params = DiffTransformParams()
-        diff_params.last_input_series = pd.Series( [2., 4., 8., 16., 32.] )
-        diff_transform = DiffTransform(diff_params)
-        div_params = DivisionTransformParams()
-        div_params.last_input_series = pd.Series( [np.NaN, 2., 4., 8., 16.] )
-        div_transform = DivisionTransform(div_params)
+        diff_transform = DiffTransform()
+        diff_transform.last_input_series = pd.Series( [2., 4., 8., 16., 32.] )
+        div_transform = DivisionTransform()
+        div_transform.last_input_series = pd.Series( [np.NaN, 2., 4., 8., 16.] )
         self._steps_inv_transform(ChainedTransform (diff_transform, div_transform), [np.NaN, np.NaN, 2., 2., 2., 2],
                                       [2., 4., 8., 16., 32., 64])
 
     def test_tr_chained_diff_shift_log(self):
-        self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
-                                                       ValueShiftTransform(ValueShiftTransformParams()),
-                                                       LogTransform(LogTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(),
+                                                       ValueShiftTransform(),
+                                                       LogTransform()),
                                       [2., 4., 8., 16., 32.])
 
     def test_tr_chained_diff_shiftNegative_log(self):
-        self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
-                                                       ValueShiftTransform(ValueShiftTransformParams()),
-                                                       LogTransform(LogTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(),
+                                                       ValueShiftTransform(),
+                                                       LogTransform()),
                                       [2., -4., 8., -16., 9.])
 
     def test_returned_type_boxcox(self):
-        self._steps_returned_type(BoxCoxTransform(BoxCoxTransformParams()))
+        self._steps_returned_type(BoxCoxTransform())
 
     def test_tr_chained_boxcox_diff(self):
-        self._steps_transform_reverse(ChainedTransform(BoxCoxTransform(BoxCoxTransformParams()),
-                                                       DiffTransform(DiffTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(BoxCoxTransform(),
+                                                       DiffTransform()),
                                       [2., 4., 8., 16., 32.])
 
     def test_tr_chained_boxcox_diff_log(self):
-        self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
-                                                       ValueShiftTransform(ValueShiftTransformParams()),
-                                                       BoxCoxTransform(BoxCoxTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(),
+                                                       ValueShiftTransform(),
+                                                       BoxCoxTransform()),
                                       [2., 4., -8., -16., 4.])
 
     def test_tr_chained_diff_scale_shift(self):
-        self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
-                                                       ValueScaleTransform(ValueScaleTransformParams()),
-                                                       ValueShiftTransform(ValueShiftTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(),
+                                                       ValueScaleTransform(),
+                                                       ValueShiftTransform()),
                                       [2., 4., -8., -16., 4.])
 
     def test_tr_chained_diff_division(self):
-        self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
-                                                       DivisionTransform(DivisionTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(),
+                                                       DivisionTransform()),
                                       [2., 4., -8., -16., 4.])
 
     def test_tr_chained_division_log(self):
-        self._steps_transform_reverse(ChainedTransform(DivisionTransform(DivisionTransformParams()),
-                                                       LogTransform(LogTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DivisionTransform(),
+                                                       LogTransform()),
                                       [np.NaN, 2.0, 12., 8., 20.])
 
     def test_tr_chained_diff_division_shift_scale_log(self):
-        self._steps_transform_reverse(ChainedTransform(DiffTransform(DiffTransformParams()),
-                                                       DivisionTransform(DivisionTransformParams()),
-                                                       ValueShiftTransform(ValueShiftTransformParams()),
-                                                       LogTransform(LogTransformParams())),
+        self._steps_transform_reverse(ChainedTransform(DiffTransform(),
+                                                       DivisionTransform(),
+                                                       ValueShiftTransform(),
+                                                       LogTransform()),
                                       [2., 4., -8., -16., 4.])
 
 
