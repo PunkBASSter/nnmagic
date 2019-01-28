@@ -59,6 +59,7 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, ba
         dfp = sequence_df.groupby(common_cols).size().reset_index(name='pre_count')
         dfr = sequence_df.groupby(seq_cols).size().reset_index(name='fact_count')
         dfc = pd.merge(dfr, dfp, how='outer', on=common_cols)
+        dfc['diff'] = dfc['Seq_0']-dfc['Seq_1']
         dfc['prob'] = dfc['fact_count'].div(dfc['pre_count'])
         tmp_dfs.append(dfc)
 
@@ -66,8 +67,9 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, ba
     for df_ix in range(tmp_dfs.__len__()-2,-1,-1):
         prob_res = prob_res.append(tmp_dfs[df_ix], ignore_index=True)
 
+    #reorder columns
     final_columns.reverse()
-    prob_res = prob_res[final_columns + ['fact_count', 'pre_count', 'prob']]
+    prob_res = prob_res[final_columns + ['diff', 'fact_count', 'pre_count', 'prob']]
     prob_res = prob_res.fillna(0)
     for c in final_columns:
         prob_res[c] = prob_res[c].astype(int)
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     indicator_name = config["indicator_name"]
     sequence_min_len = config["sequence_min_len"]
     sequence_max_len = config["sequence_max_len"]
-    plot_indicator = config["plot_indicator"]
+    plot_last_samples = config["plot_last_samples"]
     save_calculations = config["save_calculations"]
     float_precision = config["float_precision"]
     csv_separator = config["csv_separator"]
@@ -128,10 +130,11 @@ if __name__ == '__main__':
     probability_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
     print(f'Writing file {fname}')
 
-    if plot_indicator:
+    if plot_last_samples > 0:
         print("Plotting indicator...")
         #plt.figure()
-        vis_df.plot()
+        df_to_plot = pd.DataFrame(vis_df.tail(plot_last_samples))
+        df_to_plot.plot()
         plt.show()
         print('Close plot and press enter to end.')
         a = sys.stdin.readline()

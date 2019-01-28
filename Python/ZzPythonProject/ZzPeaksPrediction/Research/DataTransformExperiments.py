@@ -15,7 +15,6 @@ from DataTransforms.LogTransform import LogTransform, LogTransformParams
 from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
 from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
 from DataTransforms.ChainedTransform import ChainedTransform
-from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import StatsInfoTransformDecorator
 import HelperFunctions.StatisticsHelperFunctions as shf
 
 params = ModelParameters()
