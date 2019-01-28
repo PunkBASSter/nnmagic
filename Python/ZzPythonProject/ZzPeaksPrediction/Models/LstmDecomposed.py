@@ -14,7 +14,6 @@ from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTr
 from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
 import pandas as pd
 from DataTransforms.ChainedTransform import ChainedTransform
-from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import StatsInfoTransformDecorator
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
