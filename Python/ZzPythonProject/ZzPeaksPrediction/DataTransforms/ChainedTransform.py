@@ -11,7 +11,6 @@ class ChainedTransform(TransformBase):
         for arg in args:
             self._transformation_sequence.append(arg)
 
-
     def transform(self, series):
         series = pd.Series(series.values)
         length = len(self._transformation_sequence)

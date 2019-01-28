@@ -1,35 +1,36 @@
-from DataTransforms.TransformBase import TransformBase, TransformParams
+from DataTransforms.TransformBase import *
 import math
 import pandas as pd
 import numpy as np
 
 
-class LogTransformParams(TransformParams):
-    log_base = None
-    log_base_limit = 9999999
-    inv_log_base_multiplier = 1
-
-
 class LogTransform(TransformBase):
-    params: LogTransformParams
+
+    log_base : float
+    log_base_limit : float
+    inv_log_base_multiplier : float
+
+    def __init__(self, **kwargs):
+        self.log_base = None
+        self.log_base_limit = 9999999
+        self.inv_log_base_multiplier = 1
+        super().__init__(**kwargs)
 
     def transform(self, series: pd.Series):
 
-        if not self.params.log_base:
-            self.params.log_base = self._calc_log_base(series)
+        if not self.log_base:
+            self.log_base = self._calc_log_base(series)
 
-        transformed = series.transform(lambda x: math.log(x, self.params.log_base))
+        transformed = series.transform(lambda x: math.log(x, self.log_base))
         return pd.Series(transformed)
 
     def inv_transform(self, series: pd.Series):
-        #inp_lst = series.tolist()
-        log_base = self.params.log_base * self.params.inv_log_base_multiplier
+        log_base = self.log_base * self.inv_log_base_multiplier
 
         res = series.transform(lambda x: log_base ** x)
         return res
 
     def _calc_log_base(self, series: pd.Series):
         log_base = max(abs(np.nanmin(series)), np.nanmax(series))
-        log_base = min(log_base, self.params.log_base_limit)
-        #print(f"Calculated log base: {log_base}")
+        log_base = min(log_base, self.log_base_limit)
         return log_base

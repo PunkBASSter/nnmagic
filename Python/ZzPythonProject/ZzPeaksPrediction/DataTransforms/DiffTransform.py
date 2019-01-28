@@ -1,23 +1,16 @@
-import numpy as np
-import pandas as pd
-from DataTransforms.LeftShiftedTransformBase import LeftShiftedTransformBase, LeftShiftedTransformParams
+from DataTransforms.LeftShiftedTransformBase import *
 
-
-class DiffTransformParams(LeftShiftedTransformParams):
-    """Only periods=1 is currently supported."""
-    periods=1
 
 class DiffTransform(LeftShiftedTransformBase):
-    params: DiffTransformParams()
 
     def transform(self, series):
-        self.params.last_input_series = series
+        self.last_input_series = series
         nan_pos = self.get_first_not_nan_pos( series )
-        diff_series = series.iloc[nan_pos:].diff(periods=self.params.periods)
+        diff_series = series.iloc[nan_pos:].diff()
         return diff_series
 
     def inv_transform(self, series):
-        last_input_series = self.params.last_input_series
+        last_input_series = self.last_input_series
 
         first_value_pos = self.get_first_not_nan_pos( series )
         calc_values = []

@@ -1,29 +1,22 @@
 from scipy.stats import morestats as stats
-from DataTransforms.TransformBase import TransformBase, TransformParams
+from DataTransforms.TransformBase import *
 import numpy as np
 import pandas as pd
 
 
-class BoxCoxTransformParams(TransformParams):
+class BoxCoxTransform(TransformBase):
     lmbda = None
     alpha = None
 
-
-class BoxCoxTransform(TransformBase):
-    params: BoxCoxTransformParams
-
     def transform(self, series: pd.Series):
-        # self.params.alpha = 123
-        # self.params.lmbda= 345
 
-        # result = stats.boxcox(series.values, lmbda=self.params.lmbda, alpha=self.params.alpha)
-        result = stats.boxcox(series.values, **self.params)
+        result = stats.boxcox(series.values, lmbda=self.lmbda, alpha=self.alpha)
         # Unpacking result tuple directly from scipy.boxcox(...) causes weird errors in bulk execution of tests!
-        res, self.params.lmbda, *_ = result
+        res, self.lmbda, *_ = result
         return pd.Series(res)
 
     def inv_transform(self, series: pd.Series):
-        return self._inv_boxcox(series, self.params.lmbda)
+        return self._inv_boxcox(series, self.lmbda)
 
     def _inv_boxcox(self, y, lmbda):
         if lmbda == 0:

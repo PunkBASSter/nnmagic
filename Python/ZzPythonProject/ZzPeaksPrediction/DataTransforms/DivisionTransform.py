@@ -1,17 +1,11 @@
 import numpy as np
-import pandas as pd
-from DataTransforms.LeftShiftedTransformBase import LeftShiftedTransformBase, LeftShiftedTransformParams
-
-
-class DivisionTransformParams(LeftShiftedTransformParams):
-    pass
+from DataTransforms.LeftShiftedTransformBase import *
 
 
 class DivisionTransform(LeftShiftedTransformBase):
-    params: DivisionTransformParams()
 
     def transform(self, series):
-        self.params.last_input_series = series
+        self.last_input_series = series
 
         first_value_pos = self.get_first_not_nan_pos( series )
         calc_values = []
@@ -24,7 +18,7 @@ class DivisionTransform(LeftShiftedTransformBase):
         return res_series
 
     def inv_transform(self, series):
-        last_input_series = self.params.last_input_series
+        last_input_series = self.last_input_series
 
         first_value_pos = self.get_first_not_nan_pos( series )
         calc_values = []

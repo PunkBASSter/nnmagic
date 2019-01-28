@@ -1,15 +1,9 @@
-import numpy as np
-import pandas as pd
 import math
-from DataTransforms.TransformBase import TransformBase, TransformParams
-
-
-class LeftShiftedTransformParams(TransformParams):
-    last_input_series: pd.Series
+from DataTransforms.TransformBase import *
 
 
 class LeftShiftedTransformBase(TransformBase):
-    params: LeftShiftedTransformParams
+    last_input_series: pd.Series
 
     def get_first_not_nan_pos(self, series: pd.Series):
         for i in range(0, len(series)):
