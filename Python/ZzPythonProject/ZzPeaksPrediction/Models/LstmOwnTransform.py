@@ -5,17 +5,15 @@ from Common.ModelParameters import ModelParameters
 from SampleGenerators.LstmOwnTransformSampleGenerator import LstmOwnTransformSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
 from Models.ModelTrainer import ModelTrainer
-from DataTransforms.TransformBase import TransformBase, TransformParams
-from DataTransforms.DivisionTransform import DivisionTransform, DivisionTransformParams
-from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
-from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
-from DataTransforms.LogTransform import LogTransform, LogTransformParams
-from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
-from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
+from DataTransforms.DivisionTransform import *
+from DataTransforms.BoxCoxTransform import *
+from DataTransforms.DiffTransform import *
+from DataTransforms.LogTransform import *
+from DataTransforms.ValueShiftTransform import *
+from DataTransforms.ValueScaleTransform import *
 import pandas as pd
-from DataTransforms.ChainedTransform import ChainedTransform
-from DataTransforms.TransformDecorators.StatsInfoTransformDecorator import StatsInfoTransformDecorator
-from DataTransforms.TrimNanLeftTransform import TrimNanLeftTransform, TrimNanLeftTransformParams
+from DataTransforms.ChainedTransform import *
+from DataTransforms.TrimNanLeftTransform import *
 import copy
 import numpy as np
 from HelperFunctions import DataFrameHelperFunctions as dfhf
@@ -24,14 +22,14 @@ cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build 
 params = ModelParameters()
 N = params.pred_N
 M = params.pred_M
-box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
-diff_transform = DiffTransform(DiffTransformParams())
-div_transform = DivisionTransform(DivisionTransformParams())
-log_transform = LogTransform(LogTransformParams())
-shift_transform1 = ValueShiftTransform(ValueShiftTransformParams())
-scale_transform = ValueScaleTransform(ValueScaleTransformParams(target_abs_level=0.9))
-shift_transform2 = ValueShiftTransform(ValueShiftTransformParams())
-trim_nans_transform = TrimNanLeftTransform(TrimNanLeftTransformParams())
+box_cox_transform = BoxCoxTransform()
+diff_transform = DiffTransform()
+div_transform = DivisionTransform()
+log_transform = LogTransform()
+shift_transform1 = ValueShiftTransform()
+scale_transform = ValueScaleTransform(target_abs_level=0.9)
+shift_transform2 = ValueShiftTransform()
+trim_nans_transform = TrimNanLeftTransform()
 
 chained_transform = ChainedTransform(
     diff_transform,

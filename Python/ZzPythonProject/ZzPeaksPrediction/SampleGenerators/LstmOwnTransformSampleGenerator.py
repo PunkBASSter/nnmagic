@@ -1,11 +1,9 @@
 import pandas as pd
 import numpy as np
-import HelperFunctions.DataFrameHelperFunctions as dfhf
 from DataTransforms.TransformBase import TransformBase
 from Common.ModelParameters import ModelParameters
 import copy
 from time import gmtime, strftime
-
 
 
 class LstmOwnTransformSampleGenerator:

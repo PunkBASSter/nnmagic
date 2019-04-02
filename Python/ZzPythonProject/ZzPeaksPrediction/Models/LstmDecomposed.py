@@ -5,13 +5,12 @@ from Common.ModelParameters import ModelParameters
 from SampleGenerators.LstmSampleGenerator import LstmSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
 from Models.ModelTrainer import ModelTrainer
-from DataTransforms.TransformBase import TransformBase, TransformParams
-from DataTransforms.DivisionTransform import DivisionTransform, DivisionTransformParams
-from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
-from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
-from DataTransforms.LogTransform import LogTransform, LogTransformParams
-from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
-from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
+from DataTransforms.DivisionTransform import DivisionTransform
+from DataTransforms.BoxCoxTransform import BoxCoxTransform
+from DataTransforms.DiffTransform import DiffTransform
+from DataTransforms.LogTransform import LogTransform
+from DataTransforms.ValueShiftTransform import ValueShiftTransform
+from DataTransforms.ValueScaleTransform import ValueScaleTransform
 import pandas as pd
 from DataTransforms.ChainedTransform import ChainedTransform
 
@@ -22,13 +21,13 @@ params = ModelParameters()
 N = params.pred_N
 M = params.pred_M
 
-box_cox_transform = BoxCoxTransform(BoxCoxTransformParams())
-diff_transform = DiffTransform(DiffTransformParams())
-div_transform = DivisionTransform(DivisionTransformParams())
-log_transform = LogTransform(LogTransformParams())
-shift_transform1 = ValueShiftTransform(ValueShiftTransformParams())
-scale_transform = ValueScaleTransform(ValueScaleTransformParams(target_abs_level=0.9))
-shift_transform2 = ValueShiftTransform(ValueShiftTransformParams())
+box_cox_transform = BoxCoxTransform()
+diff_transform = DiffTransform()
+div_transform = DivisionTransform()
+log_transform = LogTransform()
+shift_transform1 = ValueShiftTransform()
+scale_transform = ValueScaleTransform(target_abs_level=0.9)
+shift_transform2 = ValueShiftTransform()
 
 #no_transform = TransformBase()
 
