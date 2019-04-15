@@ -34,7 +34,9 @@ __pycache__*/
 .idea*/
 .idea/
 .pytest_cache/
-Python/ZzPythonProject/MarketResearch/EURUSD_PERIOD_H1.csv
+Python/ZzPythonProject/WrtMarketResearch/*.csv
 venv/
 .ipynb_checkpoints/
 .ipynb_checkpoints*/
+/Python/ZzPythonProject/WrtMarketResearch/ResultData/*.csv
+/Python/ZzPythonProject/WrtMarketResearch/Probability_Body_Range_RangeUp_RangeDn_Gaps.zip

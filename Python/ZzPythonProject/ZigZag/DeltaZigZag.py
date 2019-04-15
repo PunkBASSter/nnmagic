@@ -48,4 +48,4 @@ class DeltaZigZag(FastZigZag):
         #return zz
 
     def get_depth(self):
-        return self.last_swing_size * self.depth / 100
+        return self.last_swing_size * self.depth #/ 100

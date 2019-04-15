@@ -21,7 +21,7 @@ def read_csv(file_path, columns_to_take):
 
 if __name__ == '__main__':
 
-    data_path = 'C:/BitBucket/nn_experiments/Python/ZzPythonProject/MarketResearch/Rates_EURUSD_PERIOD_H1.csv'
+    data_path = 'C:/BitBucket/nn_experiments/Python/ZzPythonProject/WrtMarketResearch/Rates_EURUSD_PERIOD_H1.csv'
     rates = read_csv( data_path, ['timestamp', 'open', 'high', 'low', 'close'] )
 
     fzz = DeltaZigZag(0.03)

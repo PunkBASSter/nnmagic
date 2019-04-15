@@ -20,11 +20,11 @@ def read_csv(file_path, columns_to_take):
     data = pd.read_csv( file_path )[columns_to_take]
     return data
 
-def calc_indicator(data, ind_value_col, ind_period, bands_period, std_bands):
+def calc_indicator(data, ind_value_col, ind_func, ind_period, bands_period, std_bands):
     print('Filling DataFrame with basic data, Indicator Values, MA, STD')
 
     data['date'] = data.timestamp.apply(datetime.datetime.fromtimestamp)
-    data[ind_value_col] = (data.close - data.open).rolling( ind_period ).mean()
+    data[ind_value_col] = ind_func(data).rolling( ind_period ).mean()
     data['ma'] = data[ind_value_col].rolling( bands_period ).mean()
     data['std'] = data[ind_value_col].rolling( bands_period ).std()
 
@@ -77,7 +77,6 @@ def process_sequences(inp_df, sequence_min_len, sequence_max_len, ind_period, ba
     return prob_res
 
 
-
 if __name__ == '__main__':
     settings_file_name = "Settings.json"
     if len(sys.argv) > 1:
@@ -89,7 +88,7 @@ if __name__ == '__main__':
         config = json.load(f)
 
     input_folder = config["input_folder"] # C:\\Users\\PunkBASSter\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\
-    file_name = config["file_name"]
+    file_names = config["file_names"]
     columns_to_take = config["columns_to_take"]
     output_folder = config["output_folder"]
     out_file_name_prefix = config["out_file_name_prefix"]
@@ -97,7 +96,7 @@ if __name__ == '__main__':
     ind_period = config["ind_period"]
     bands_period = config["bands_period"]
     std_bands = config["std_bands"]
-    indicator_name = config["indicator_name"]
+    indicator_functions = config["indicator_functions"]
     sequence_min_len = config["sequence_min_len"]
     sequence_max_len = config["sequence_max_len"]
     plot_last_samples = config["plot_last_samples"]
@@ -105,37 +104,37 @@ if __name__ == '__main__':
     float_precision = config["float_precision"]
     csv_separator = config["csv_separator"]
 
+    for file_name in file_names:
+        for indicator_name in indicator_functions.keys():
 
+            func_tmp_dict = {}
+            exec( indicator_functions[indicator_name], func_tmp_dict )
+            df = read_csv(file_path=input_folder + file_name, columns_to_take=columns_to_take)
+            ind_df, vis_df = calc_indicator(data=df,
+                                            ind_func=func_tmp_dict[indicator_name],  #lambda data: data.close - data.open,
+                                            ind_value_col=indicator_name,
+                                            ind_period=ind_period,
+                                            bands_period=bands_period,
+                                            std_bands=std_bands )
 
-    df = read_csv(file_path=input_folder + file_name, columns_to_take=columns_to_take)
+            if save_calculations:
+                fname = f'{output_folder}{calculations_file_name_prefix}_{indicator_name}_{file_name}'
+                print(f'Writing file {fname}')
+                ind_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
 
-    ind_df, vis_df = calc_indicator(data=df,
-                                       ind_value_col=indicator_name,
-                                       ind_period=ind_period,
-                                       bands_period=bands_period,
-                                       std_bands=std_bands)
+            probability_df = process_sequences(inp_df=ind_df,
+                                               sequence_min_len=sequence_min_len,
+                                               sequence_max_len=sequence_max_len,
+                                               ind_period=ind_period,
+                                               bands_period=bands_period)
 
-    if save_calculations:
-        fname = f'{output_folder}{calculations_file_name_prefix}_{indicator_name}_{file_name}'
-        print(f'Writing file {fname}')
-        ind_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
+            fname = f'{output_folder}{out_file_name_prefix}_{indicator_name}_{file_name}'
+            probability_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
+            print(f'Writing file {fname}')
 
-    probability_df = process_sequences(inp_df=ind_df,
-                                       sequence_min_len=sequence_min_len,
-                                       sequence_max_len=sequence_max_len,
-                                       ind_period=ind_period,
-                                       bands_period=bands_period)
-
-    fname = f'{output_folder}{out_file_name_prefix}_{indicator_name}_{file_name}'
-    probability_df.to_csv(fname, float_format=f'%.{float_precision}f', sep=csv_separator)
-    print(f'Writing file {fname}')
-
-    if plot_last_samples > 0:
-        print("Plotting indicator...")
-        #plt.figure()
-        df_to_plot = pd.DataFrame(vis_df.tail(plot_last_samples))
-        df_to_plot.plot()
-        plt.show()
-        print('Close plot and press enter to end.')
-        a = sys.stdin.readline()
-
+            if plot_last_samples > 0:
+                print("Plotting indicator...")
+                df_to_plot = pd.DataFrame(vis_df.tail(plot_last_samples))
+                df_to_plot.plot()
+                plt.show()
+                print('Close plot and press enter to end.')

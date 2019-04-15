@@ -1,17 +1,32 @@
 {
   "input_folder" : "",
-  "file_name" : "_USA500b_PERIOD_D1.csv",
-  "columns_to_take" : ["timestamp", "open", "close"],
+  "file_names" : [
+    "_EURUSDb_PERIOD_D1.csv",
+    "_EURUSDb_PERIOD_H4.csv",
+    "_GBPUSDb_PERIOD_D1.csv",
+    "_GBPUSDb_PERIOD_H4.csv",
+    "_UKOILb_PERIOD_D1.csv",
+    "_UKOILb_PERIOD_H4.csv",
+    "_USA500b_PERIOD_D1.csv",
+    "_USA500b_PERIOD_H4.csv"
+  ],
+  "columns_to_take" : ["timestamp", "open", "high", "low", "close"],
   "output_folder" : "",
   "out_file_name_prefix" : "Prob",
   "calculations_file_name_prefix" : "Calc",
   "ind_period" : 1,
   "bands_period" : 12,
   "std_bands" : [-2.4, -1.8, -1.2, -0.6, 0, 0.6, 1.2, 1.8, 2.4],
-  "indicator_name" : "Body",
+  "indicator_functions": {
+    "Gaps": "def Gaps(data) : res = data.open - data.close.shift(-1); data.drop(data.tail(1).index,inplace=True); return res",
+    "Body": "def Body(data) : return data.close - data.open",
+    "Range": "def Range(data) : return data.high - data.low",
+    "RangeDown": "def RangeDown(data) : return data.open - data.low",
+    "RangeUp": "def RangeUp(data) : return data.high - data.open"
+  },
   "sequence_min_len" : 3,
   "sequence_max_len" : 5,
-  "plot_last_samples" : 200,
+  "plot_last_samples" : 0,
   "save_calculations" : false,
   "float_precision" : 2,
   "csv_separator" : ";"

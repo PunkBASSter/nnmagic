@@ -5,11 +5,11 @@ class FastZigZag:
     direction: int
     depth : float
     last_i : int
-    colname : str
     prev_res : pd.Series
     last_swing_size: int
 
     def __init__(self, depth):
+        '''Requires depth size in pips'''
         self.prev_idx = 0
         self.direction = 1
         self.depth = depth

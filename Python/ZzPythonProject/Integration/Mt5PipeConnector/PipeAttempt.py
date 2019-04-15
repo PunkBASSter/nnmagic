@@ -1,30 +1,37 @@
 import time
 import sys
 import win32pipe, win32file, pywintypes
+import json
 
 
 def pipe_server():
     print("pipe server")
     count = 0
     pipe = win32pipe.CreateNamedPipe(
-        r'\\.\pipe\PipesOfPiece',
+        r'\\.\pipe\MyDataPipe',
         win32pipe.PIPE_ACCESS_DUPLEX,
         win32pipe.PIPE_TYPE_BYTE | win32pipe.PIPE_READMODE_BYTE | win32pipe.PIPE_WAIT,
         1, 65536, 65536,
         0,
         None)
     try:
-        print("waiting for client")
+        print("Waiting for client...")
         win32pipe.ConnectNamedPipe(pipe, None)
-        print("got client")
+        print("Got client.")
 
         while True:#count < 1000:
-            print(f"writing message {count}")
+            print(f"Writing message {count}")
             # convert to bytes
-            content = win32file.ReadFile(pipe, 64*1024)[1]
+            byte_content = win32file.ReadFile(pipe, 64*1024)[1]
+            str_content = byte_content.decode( "utf-8" )
+            json_content = json.loads(str_content)
 
-            print( f"message: {content}" )
+            print( f"Read content: {byte_content}" )
+            print( f"Read content: {json_content}" )
+
             some_data = str.encode( f"{count % 4},1.{count},1.{count-1},1.{count+1},1,1544543200," )
+
+            print( f"Writing data to pipe.")
             win32file.WriteFile(pipe, some_data)
             #win32file.flush()
             #time.sleep(1)
