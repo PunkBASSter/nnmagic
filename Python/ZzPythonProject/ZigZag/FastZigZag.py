@@ -1,15 +1,16 @@
 import pandas as pd
 
+
 class FastZigZag:
-    prev_idx : int
+    prev_idx: int
     direction: int
-    depth : float
-    last_i : int
-    prev_res : pd.Series
+    depth: float
+    last_i: int
+    prev_res: pd.Series
     last_swing_size: int
 
     def __init__(self, depth):
-        '''Requires depth size in pips'''
+        """Requires depth size in pips"""
         self.prev_idx = 0
         self.direction = 1
         self.depth = depth
@@ -18,17 +19,17 @@ class FastZigZag:
         self.last_swing_size = 0
 
     def calc_zz(self, df: pd.DataFrame):
-        '''Requires DataFrame containing columns called 'high' and 'low',
-         calculates Fast ZigZag with constant depth as price range.'''
+        """Requires DataFrame containing columns called 'high' and 'low',
+         calculates Fast ZigZag with constant depth as price range."""
 
         if self.prev_res is None:
-            zz = pd.Series( 0. for _ in range( self.last_i, df.__len__() ) )
+            zz = pd.Series(0. for _ in range(self.last_i, df.__len__()))
         else:
-            ext = [e for e in range( self.last_i + 1, df.__len__())]
-            zz = self.prev_res.append( pd.Series(0, index=ext), ignore_index=False)
+            ext = [e for e in range(self.last_i + 1, df.__len__())]
+            zz = self.prev_res.append(pd.Series(0, index=ext), ignore_index=False)
 
         last = self.prev_idx
-        for i in range( self.last_i, df.__len__() ):
+        for i in range(self.last_i, df.__len__()):
             if self.direction > 0:
                 if df.high[i] > zz[last]:
                     zz[last] = 0
