@@ -4,31 +4,27 @@ import win32pipe, win32file, pywintypes
 import json
 
 
+
 def pipe_client():
     print("pipe client")
     quit = False
 
+    test_data = []
+    for i in range(0,3):
+        with open(f"TestData\\Pack{i}.json") as pack:
+            test_pack = pack.read()
+        test_data.append(test_pack)
+
     while not quit:
         try:
-            handle = win32file.CreateFile(
-                r'\\.\pipe\MyDataPipe',
-                win32file.GENERIC_READ | win32file.GENERIC_WRITE,
-                0,
-                None,
-                win32file.OPEN_EXISTING,
-                0,
-                None
-            )
+            handle = win32file.CreateFile(r'\\.\pipe\MyDataPipe', win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+                0, None, win32file.OPEN_EXISTING, 0, None)
 
-            test_data = \
-                str.encode(f'{{"status":"init_end", "size":100, "data":{{ "time":123213213, "timestamp":1232131231 }} }}')
+            for td in test_data:
+                win32file.WriteFile(handle, td)
+                resp = win32file.ReadFile(handle, 64 * 1024)
+                print(f"message: {resp}")
 
-            print(f"Writing data to pipe.")
-            win32file.WriteFile(handle, test_data)
-
-            #res = win32pipe.SetNamedPipeHandleState(handle, win32pipe.PIPE_READMODE_MESSAGE, None, None)
-            #if res == 0:
-            #    print(f"SetNamedPipeHandleState return code: {res}")
             while True:
                 resp = win32file.ReadFile(handle, 64*1024)
                 print(f"message: {resp}")
