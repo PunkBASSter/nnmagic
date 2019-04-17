@@ -2,7 +2,6 @@ import time
 import sys
 import win32pipe, win32file, pywintypes
 import json
-from Integration.MtPyBotBase import MtPyBotBase
 
 
 def pipe_server(process_str_callback):
@@ -37,8 +36,6 @@ def pipe_server(process_str_callback):
 
             #time.sleep(1)
             count += 1
-
-
     except:
         pipe.send_error()
     finally:

@@ -1,43 +1,59 @@
 import json
 import pandas as pd
-from Integration.Mt5PipeConnector import PipeServer as pipe
+import Mt5PipeConnector.PipeServer as pipe
+
+STATE_INIT = "INIT"
+STATE_TICK = "TICK"
+SUCCESS_RESULT = "OK"
+ERROR_RESULT = "ERROR"
 
 
-class StateStr:
-    InitStart = "init_start"
-    InitProgress = "init_progress"
+class OrderDto:
+    Action: str
+    OpenPrice: float
+    StopLoss: float
+    TakeProfit: float
 
 
 class MtPyBotBase:
     """Encapsulates basic API calls and structure of MT bot business logic"""
     """Response format; Traded assets; Pipe management mb; """
 
+    _response_format: str
     _data: pd.DataFrame
     _state: str
 
-    def __init__(self):
-        self._data = None
-        self._state = "init"
+    def __init__(self, response_format=""):
+        self._data = pd.DataFrame()
+        self._state = "INIT"
+        self._response_format = response_format
 
     def process_json_data(self, data_updates: str) -> str:
 
         json_dict = json.loads(data_updates)
-        temp_df = pd.DataFrame(json_dict["data"])
-        #temp_df.reset_index()
-        temp_df = temp_df.set_index("timestamp")
-        #temp_df_t = pd.DataFrame(json_dict["data"]).transpose()
-        if self._data is None:
-            self._data = temp_df
-        else:
-            df = pd.concat([self._data, temp_df]) #  (MERGE)
-            self._data = df[~df.index.duplicated(keep='last')]
+        self._state = json_dict["state"]
 
-        if temp_df.__len__() == 1:
+        if self._state == STATE_INIT:
+            try:
+                temp_df = pd.DataFrame(json_dict["data"])
+                temp_df = temp_df.set_index("timestamp")
+                self._data = pd.concat([self._data, temp_df])
+                return SUCCESS_RESULT
+            except Exception as e:
+                return ERROR_RESULT + "_" + e.__str__()
+
+        if self._state == STATE_TICK:
             self._data = self._data[~self._data.index.duplicated(keep='last')]
-            #init finished?
-            print("END!")
+            result = self.on_tick_handler()
+            return result
 
-        return "result"
+        return ERROR_RESULT
+
+    def on_tick_handler(self) -> str:
+        return self._on_tick_internal()
+
+    def _on_tick_internal(self):
+        return SUCCESS_RESULT
 
 
 if __name__ == '__main__':
