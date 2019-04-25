@@ -5,7 +5,7 @@ class TransformBase:
     def __init__(self, **kwargs):
         #for key, value in kwargs.items():
         #    setattr(self, key, value)
-        self.__dict__.update( kwargs )
+        self.__dict__.update(kwargs)
 
     def transform(self, series: pd.Series) -> pd.Series:
         return series

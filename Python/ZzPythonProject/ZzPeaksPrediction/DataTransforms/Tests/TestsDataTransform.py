@@ -132,8 +132,8 @@ class TestsDataTransform(unittest.TestCase):
 
     # integration tests
     def test_chained_diff_div(self):
-        diff_transform = DiffTransform( )
-        div_transform = DivisionTransform( )
+        diff_transform = DiffTransform()
+        div_transform = DivisionTransform()
         self._steps_transform( ChainedTransform( diff_transform, div_transform ), [2., 4., 8., 16., 32.],
                                [np.NaN, np.NaN, 2., 2., 2.] )
 
