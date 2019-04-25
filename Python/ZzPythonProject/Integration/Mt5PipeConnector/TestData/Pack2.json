@@ -1,0 +1,17 @@
+{
+   "status":"init_end",
+   "size":1,
+   "data":[
+      {
+         "timestamp":1555383600,
+         "time_current":1555386693,
+         "open":1.003730,
+         "high":1.004180,
+         "low":1.003720,
+         "close":1.004020,
+         "tick_volume":2130,
+         "spread":0,
+         "real_volume":0
+      }
+   ]
+}
