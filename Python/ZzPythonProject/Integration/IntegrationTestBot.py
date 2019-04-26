@@ -5,8 +5,14 @@ class IntegrationTestBot(MtPyBotBase):
 
     def on_tick_handler(self) -> str:
 
+        #if self._active_orders.__len__() > 0:
+        #    order = OrderModel(command=OP_REMOVE, ticket=self._active_orders.iloc[0].ticket)
+        #    df = order.to_df()
+        #    csv = df.to_csv()
+        #    return csv
+
         if self._active_orders.__len__() > 0:
-            order = OrderModel(command=OP_REMOVE, ticket=self._active_orders.iloc[0].ticket)
+            order = OrderModel(command=OP_UPDATE, ticket=self._active_orders.iloc[0].ticket, stop_loss=self._active_orders.iloc[0].stop_loss + 0.001)
             df = order.to_df()
             csv = df.to_csv()
             return csv

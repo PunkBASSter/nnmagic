@@ -19,11 +19,11 @@ OP_REMOVE = 9
 OP_NONE = 1000
 
 class OrderModel:
-    command: int
-    open_price: float
-    stop_loss: float
-    take_profit: float
-    lots: float
+    command = -1
+    open_price = -1.0
+    stop_loss = 0
+    take_profit = 0
+    lots = 0.0
     expiration_date = 0
     ticket = -1
 
