@@ -1,5 +1,6 @@
 from MTxPyFastZigZag import *
 
+
 class MTxPyDeltaZigZag(MTxPyFastZigZag):
     """Differs from FastZZ only in Depth calculation (dynamic vs const)"""
     def __init__(self, depth):

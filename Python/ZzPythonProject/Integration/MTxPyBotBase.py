@@ -1,7 +1,6 @@
 import json
 import pandas as pd
 import Mt5PipeConnector.PipeServer as pipe
-from MTxPyIndicatorBase import MTxPyIndicatorBase
 
 BOT_STATE_INIT = "INIT"
 BOT_STATE_INIT_COMPLETE = "INIT_COMPLETE"
