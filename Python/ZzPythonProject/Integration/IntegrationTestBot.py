@@ -1,7 +1,7 @@
-from Integration.MtPyBotBase import *
+from Integration.MTxPyBotBase import *
 
 
-class IntegrationTestBot(MtPyBotBase):
+class IntegrationTestBot(MTxPyBotBase):
 
     def on_tick_handler(self) -> str:
 
@@ -20,7 +20,7 @@ class IntegrationTestBot(MtPyBotBase):
         if self._active_orders.__len__() == 0:
             order = OrderModel(command=OP_BUY, open_price=0, stop_loss=0.9, take_profit=1.1, lots=0.1, expiration_date=0, ticket=-1)
             self._orders_to_open = order.to_df()
-            return self._orders_to_open.to_csv()#result
+            return self._orders_to_open.to_csv()
 
 
 if __name__ == '__main__':
