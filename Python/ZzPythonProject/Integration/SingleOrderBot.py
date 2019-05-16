@@ -52,6 +52,15 @@ class SingleOrderBot(MTxPyBotBase):
 
         return RESULT_SUCCESS
 
+    def place_or_update_order(self, order: OrderModel):
+        if self._active_orders.__len__() == 0:
+            return order
+
+        if order.exists_in_df(self._active_orders):
+            return None
+
+        #TODO Synchronize Order DELETE - Re-CREATE / UPDATE!
+
     def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
         if self._active_orders.__len__() > 0:
 
