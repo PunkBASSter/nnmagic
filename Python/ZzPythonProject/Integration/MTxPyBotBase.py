@@ -37,6 +37,18 @@ class OrderModel:
         df = pd.DataFrame([self.__dict__])
         return df
 
+    def exists_in_df(self, orders: pd.DataFrame, compare_command: bool = False) -> bool:
+        res = orders[(orders.symbol == self.symbol)
+                     & abs(orders.open_price == self.open_price)
+                     & abs(orders.stop_loss == self.stop_loss)
+                     & abs(orders.take_profit == self.take_profit)
+                     & abs(orders.lots == self.lots)
+                     & abs(orders.expiration_date == self.expiration_date)]
+        if compare_command:
+            res = res[(res.command == self.command)]
+
+        return res.__len__() > 0
+
 
 class MTxPyBotBase:
     """Encapsulates basic API calls and structure of MT bot business logic."""
@@ -114,6 +126,9 @@ class MTxPyBotBase:
         """Implement ON Tick processing (excluding indicator updates)"""
         raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
 
+    def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
+        pass
+
     def get_market_orders(self) -> pd.DataFrame:
         return self._active_orders[(self._active_orders.command == OP_BUY) | (self._active_orders.command == OP_SELL)]
 
@@ -121,8 +136,10 @@ class MTxPyBotBase:
         return self._active_orders[(self._active_orders.command >= OP_BUYLIMIT)
                                    | (self._active_orders.command <= OP_SELLSTOP)]
 
-    def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
-        pass
+    def order_exists(self, order: OrderModel, compare_command: bool = False) -> bool:
+        return order.exists_in_df(self._active_orders, compare_command)
+
+
 
 
 if __name__ == '__main__':
