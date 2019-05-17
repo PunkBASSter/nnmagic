@@ -56,7 +56,7 @@ class SingleOrderBot(MTxPyBotBase):
         if self._active_orders.__len__() == 0:
             return order
 
-        if order.exists_in_df(self._active_orders):
+        if order.check_exists(self._active_orders):
             return None
 
         #TODO Synchronize Order DELETE - Re-CREATE / UPDATE!

@@ -2,6 +2,8 @@ import json
 import pandas as pd
 import Mt5PipeConnector.PipeServer as pipe
 
+FLOAT_CMP_PRECISION = 0.00001
+
 BOT_STATE_INIT = "INIT"
 BOT_STATE_INIT_COMPLETE = "INIT_COMPLETE"
 BOT_STATE_TICK = "TICK"
@@ -23,31 +25,38 @@ OP_NONE = 1000
 
 class OrderModel:
     def __init__(self, **kwargs):
-        self.command = -1
-        self.open_price = -1.0
-        self.stop_loss = 0
-        self.take_profit = 0
-        self.lots = 0.0
-        self.expiration_date = 0
-        self.ticket = -1
-        self.symbol = None
+        self.command: int = -1
+        self.open_price: float = -1.0
+        self.stop_loss: float = 0.0
+        self.take_profit: float = 0.0
+        self.lots: float = 0.0
+        self.expiration_date: int = 0
+        self.ticket: int = -1
+        self.symbol: str = None
         self.__dict__.update(kwargs)
 
     def to_df(self) -> pd.DataFrame:
         df = pd.DataFrame([self.__dict__])
         return df
 
-    def exists_in_df(self, orders: pd.DataFrame, compare_command: bool = False) -> bool:
+    def check_exists(self, orders: pd.DataFrame) -> bool:
         res = orders[(orders.symbol == self.symbol)
-                     & abs(orders.open_price == self.open_price)
-                     & abs(orders.stop_loss == self.stop_loss)
-                     & abs(orders.take_profit == self.take_profit)
-                     & abs(orders.lots == self.lots)
-                     & abs(orders.expiration_date == self.expiration_date)]
-        if compare_command:
-            res = res[(res.command == self.command)]
+                     & (abs(orders.open_price - self.open_price) < FLOAT_CMP_PRECISION)
+                     & (abs(orders.stop_loss - self.stop_loss) < FLOAT_CMP_PRECISION)
+                     & (abs(orders.take_profit - self.take_profit) < FLOAT_CMP_PRECISION)
+                     & (abs(orders.lots - self.lots) < FLOAT_CMP_PRECISION)
+                     & (orders.expiration_date == self.expiration_date)
+                     & (orders.command % 2 == self.command % 2) #ODD for BUY and EVEN for SELL
+                     & OP_BUY <= orders.command
+                     & orders.command <= OP_SELLSTOP]
 
         return res.__len__() > 0
+
+    @property
+    def direction(self) -> int:
+        if OP_BUY <= self.command <= OP_SELLSTOP:
+            return 1 if self.command % 2 == 0 else -1
+        return 0
 
 
 class MTxPyBotBase:
@@ -136,8 +145,8 @@ class MTxPyBotBase:
         return self._active_orders[(self._active_orders.command >= OP_BUYLIMIT)
                                    | (self._active_orders.command <= OP_SELLSTOP)]
 
-    def order_exists(self, order: OrderModel, compare_command: bool = False) -> bool:
-        return order.exists_in_df(self._active_orders, compare_command)
+    def order_exists(self, order: OrderModel) -> bool:
+        return order.check_exists( self._active_orders )
 
 
 
