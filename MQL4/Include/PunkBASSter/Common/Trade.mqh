@@ -22,22 +22,30 @@ class CTrade
       
    public:
       
-      int CreateOrder(OrderItem const &item)
+      OrderItem NormalizeItem(OrderItem &item)
+      {
+         int digits = (int)MarketInfo(item.symbol, MODE_DIGITS);
+         item.lots = NormalizeDouble(item.lots,2);
+         item.open = NormalizeDouble(item.open,digits);
+         item.stop_loss = NormalizeDouble(item.stop_loss,digits);
+         item.take_profit = NormalizeDouble(item.take_profit,digits);
+         return item;
+      }
+      
+      int CreateOrder(OrderItem &item)
       {
          int orderCmd = item.command;
          
-         double openPrice = item.open;
-         if(!CheckPriceLevelAssigned(openPrice))
+         item = NormalizeItem(item);
+         if(!CheckPriceLevelAssigned(item.open))
          {
             if(orderCmd == OP_BUY)
-               openPrice = MarketInfo(item.symbol, MODE_ASK);
+               item.open = MarketInfo(item.symbol, MODE_ASK);
             if(orderCmd == OP_SELL)
-               openPrice = MarketInfo(item.symbol, MODE_BID);
+               item.open = MarketInfo(item.symbol, MODE_BID);
          }
          
-         int digits = (int)MarketInfo(item.symbol, MODE_DIGITS);
-         return OrderSend(item.symbol,orderCmd,NormalizeDouble(item.lots,2),NormalizeDouble(openPrice,digits),
-            _slippage,NormalizeDouble(item.stop_loss,digits),NormalizeDouble(item.take_profit,digits),NULL,_magic,item.expiration,clrGreen);
+         return OrderSend(item.symbol,orderCmd,item.lots,item.open,_slippage,item.stop_loss,item.take_profit,NULL,_magic,item.expiration,clrGreen);
       }
       
       bool UpdateOrder(OrderItem const &item)
