@@ -5,68 +5,83 @@ from MTxPyDeltaZigZag import *
 class SingleOrderBot(MTxPyBotBase):
     zigzag: MTxPyDeltaZigZag
 
-    def __init__(self, magic_number, zz_depth):
+    def __init__(self, magic_number, zz_depth, remove_opposite_orders):
 
         self.zigzag = MTxPyDeltaZigZag(zz_depth)
         super().__init__(magic_number, [self.zigzag])
+        self.remove_opposite_orders = remove_opposite_orders
 
     def on_init_handler(self) -> str:
         return RESULT_SUCCESS
 
-    def on_tick_handler(self) -> str:
+    def on_tick_handler(self) -> pd.DataFrame:
+        orders = self._active_orders[self._symbol]
+        buy_positions = orders[orders.command == OP_BUY]
+        sell_positions = orders[orders.command == OP_SELL]
+        buy_orders = orders[orders.command == OP_BUYSTOP]# | orders.command == OP_BUYLIMIT]
+        sell_orders = orders[orders.command == OP_SELLSTOP]# | orders.command == OP_SELLLIMIT]
+        result = pd.DataFrame()#TODO add columns? - HZ
 
+        if buy_positions.__len__() == 0:
+            order = self.buy_condition()
+            if order:
+                order.lots = self.get_lots()
+                order.symbol = self._symbol
+
+                if order.check_exists(orders):
+                    result = result.append(OrderModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
+
+                if buy_orders.__len__() == 0:
+                    result = result.append(order.to_df(), ignore_index=False)
+                else:
+                    ticket = buy_orders.first().ticket
+                    order.command = OP_UPDATE
+                    order.ticket = ticket
+                    result = result.append(order.to_df(), ignore_index=False)
+
+            if self.remove_opposite_orders:
+                self.cmd_remove_orders(sell_orders)
+
+        if sell_positions.__len__() == 0:
+            order = self.sell_condition()
+            if order:
+                order.lots = self.get_lots()
+                order.symbol = self._symbol
+
+                if order.check_exists(orders):
+                    result = result.append(OrderModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
+
+                if sell_orders.__len__() == 0:
+                    result = result.append(order.to_df(), ignore_index=False)
+                else:
+                    ticket = sell_orders.first().ticket
+                    order.command = OP_UPDATE
+                    order.ticket = ticket
+                    result = result.append(order.to_df(), ignore_index=False)
+            if self.remove_opposite_orders:
+
+                self.cmd_remove_orders(buy_orders)
+
+        return result
+
+    def buy_condition(self):
         last_zz = self.zigzag.get_last_values(4)
-        #if last_zz[1] < last_zz[2] > last_zz[3] and last_zz[1] < last_zz[3]:
         if last_zz[2] < last_zz[3]:
-            if self._active_orders.__len__() == 0:
-                order = OrderModel(command=OP_BUYSTOP, open_price=last_zz[3], stop_loss=last_zz[2],
-                                   take_profit=1.1, lots=0.1,
-                                   expiration_date=0, ticket=-1, symbol=self._symbol)
-                tmp_order = order.to_df()
-                return tmp_order.to_csv()
+            return OrderModel(command=OP_BUYSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=1.1,
+                              expiration_date=0)
+        return None
 
-        #if last_zz[1] > last_zz[2] < last_zz[3] and last_zz[1] > last_zz[3]:
+    def sell_condition(self):
+        last_zz = self.zigzag.get_last_values(4)
         if last_zz[2] > last_zz[3]:
-            if self._active_orders.__len__() == 0:
-                order = OrderModel(command=OP_SELLSTOP, open_price=last_zz[3], stop_loss=last_zz[2],
-                                   take_profit=0.9, lots=0.1,
-                                   expiration_date=0, ticket=-1, symbol=self._symbol)
-                tmp_order = order.to_df()
-                return tmp_order.to_csv()
-
-        active_orders = self.get_market_orders()
-        #if active_orders.__len__() > 0:
-#
-        #    order = OrderModel(command=OP_UPDATE,
-        #                       ticket=self._active_orders.iloc[0].ticket,
-        #                       stop_loss=self._active_orders.iloc[0].stop_loss + 0.001)
-        #    df = order.to_df()
-        #    csv = df.to_csv()
-        #    return csv
-#
-        #if self._active_orders.__len__() == 0:
-        #    order = OrderModel(command=OP_BUY, open_price=0, stop_loss=0.9, take_profit=1.1, lots=0.1, expiration_date=0
-        #                       , ticket=-1, symbol=self.symbol)
-        #    tmp_order = order.to_df()
-        #    return tmp_order.to_csv()
-
-        return RESULT_SUCCESS
-
-    def place_or_update_order(self, order: OrderModel):
-        if self._active_orders.__len__() == 0:
-            return order
-
-        if order.check_exists(self._active_orders):
-            return None
-
-        #TODO Synchronize Order DELETE - Re-CREATE / UPDATE!
+            return OrderModel(command=OP_SELLSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=0.9,
+                              expiration_date=0)
+        return None
 
     def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
-        if self._active_orders.__len__() > 0:
-
-            pass #!!!!!!!!!!!!!!!!!!!!!!
+        pass
 
 
 if __name__ == '__main__':
-    bot = SingleOrderBot(123123, zz_depth=0.003)
+    bot = SingleOrderBot(123123, zz_depth=0.003, remove_opposite_orders=True)
     pipe.pipe_server(bot.process_json_data)
