@@ -66,7 +66,7 @@ class MTxPyBotBase:
         self.magic_number = magic_number
         self._rates = {}
         self._state = BOT_STATE_INIT
-        self._active_orders = pd.DataFrame()
+        self._active_orders = pd.DataFrame(columns=list(OrderModel.__dict__.keys()))
         self.indicators = indicators if indicators else []
         self._symbol = None
 
@@ -91,8 +91,9 @@ class MTxPyBotBase:
             self._symbol = json_dict["symbol"]
             rates =  json_dict["rates"]
             self._update_rates_data(self._symbol, rates)
-            on_tick_result = self.on_tick_handler()
-            return on_tick_result
+            on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
+            on_tick_result.append(self.on_tick_handler(), ignore_index=False)
+            return on_tick_result.to_csv()
 
         if self._state == BOT_STATE_ORDERS:
             orders_df = pd.DataFrame(json_dict["orders"])
@@ -131,8 +132,8 @@ class MTxPyBotBase:
         """Implement initialization of dependencies"""
         raise NotImplementedError("Abstract method 'on_init_handler' must be implemented.")
 
-    def on_tick_handler(self) -> str:
-        """Implement ON Tick processing (excluding indicator updates)"""
+    def on_tick_handler(self) -> pd.DataFrame:
+        """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
         raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
 
     def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
@@ -146,9 +147,20 @@ class MTxPyBotBase:
                                    | (self._active_orders.command <= OP_SELLSTOP)]
 
     def order_exists(self, order: OrderModel) -> bool:
-        return order.check_exists( self._active_orders )
+        return order.check_exists(self._active_orders)
 
+    def get_lots(self):
+        return 0.1
 
+    def cmd_remove_orders(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Generates commands to remove orders from given DF.
+        :param df: DF of Orders to be removed
+        :return: DF of OP_REMOVE based commands with tickets
+        """
+        res = df[df.ticket > -1]
+        res.command = res.apply(lambda row: OP_REMOVE, axis=1)
+        return res
 
 
 if __name__ == '__main__':
