@@ -12,9 +12,9 @@
 
 //input string ControlPipeName = "ControlPipe"; //Used to request for data pipes.
 input string DataPipeName = "MyDataPipe";
-input datetime HistoryStart = D'2008.11.19';
+input datetime HistoryStart = D'2016.01.01';
 input int ChunkSize = 100;
-input int InpMagic = 123124;
+input int InpMagic = 123123;
 
 #define BOT_STATE_INIT "INIT"
 #define BOT_STATE_INIT_COMPLETE "INIT_COMPLETE"
@@ -99,6 +99,31 @@ string ExportOrders(string state = BOT_STATE_ORDERS)
    return response;
 }
 
+bool ProcessOrderItems(OrderItem &orderItems[])
+{
+   int total = ArraySize(orderItems);
+   int successResultCount = 0;
+   for (int i = 0; i<total; i++)
+   {
+      if(orderItems[i].command>=OP_BUY && orderItems[i].command<=OP_SELLSTOP)
+      {
+         successResultCount += (-1 < trade.CreateOrder(orderItems[i]));
+         continue;
+      }
+      if(orderItems[i].command == OP_UPDATE)
+      {
+         successResultCount += trade.UpdateOrder(orderItems[i]);
+         continue;
+      }
+      if(orderItems[i].command == OP_REMOVE)
+      {
+         successResultCount += trade.RemoveOrder(orderItems[i]);
+         continue;
+      }
+   }
+   return successResultCount == total;
+}
+
 int OnInit()
 {
    dataTextIO.Open(StringFormat("\\\\.\\pipe\\%s", DataPipeName));  
@@ -116,7 +141,8 @@ int OnInit()
    if(result != SUCCESS_RESULT)
       return(INIT_FAILED);
 
-   OnTick();
+   //OnTick();
+   ExportOrders();
    
    return(INIT_SUCCEEDED);
 }
@@ -132,24 +158,9 @@ void OnTick()
    OrderItem orderItems[];
    int orders = ParseOrdersCsvToArray(orderItems, response); //only 1 order is currently supported
    
-   for (int i = 0; i<orders; i++)
-   {
-      if(orderItems[i].command>=OP_BUY && orderItems[i].command<=OP_SELLSTOP)
-      {
-         trade.CreateOrder(orderItems[i]);
-         continue;
-      }
-      if(orderItems[i].command == OP_UPDATE)
-      {
-         trade.UpdateOrder(orderItems[i]);
-         continue;
-      }
-      if(orderItems[i].command == OP_REMOVE)
-      {
-         trade.RemoveOrder(orderItems[i]);
-         continue;
-      }
-   }
+   bool res = ProcessOrderItems(orderItems);
+   if (!res)
+      PrintFormat("Unable to open order(s), last error: %d", GetLastError());
    
    ExportOrders();
 }
