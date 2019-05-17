@@ -23,6 +23,7 @@ string TrimStr(string str)
    return StringTrimRight(StringTrimLeft(str));
 }
 
+//obsolete
 OrderItem ParseOrderCsvString(string rawText, char sep = ',')
 {
    string splitted[];
@@ -85,7 +86,7 @@ int ParseOrdersCsvToArray(OrderItem &outOrders[], string rawText,char lineSep = 
          if(key == ORDER_STOP_LOSS){ item.stop_loss = StrToDouble(value); continue; }      
          if(key == ORDER_TAKE_PROFIT){ item.take_profit = StrToDouble(value); continue; }      
          if(key == ORDER_LOTS){ item.lots = StrToDouble(value); continue; }      
-         if(key == ORDER_EXPIRATION){ item.expiration = (datetime)value; continue; }
+         if(key == ORDER_EXPIRATION){ item.expiration = StrToInteger(value); continue; }
          if(key == ORDER_SYMBOL){ item.symbol = value != NULL ? value : Symbol(); continue; }
       }
       
