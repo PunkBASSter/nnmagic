@@ -47,8 +47,8 @@ class OrderModel:
                      & (abs(orders.lots - self.lots) < FLOAT_CMP_PRECISION)
                      & (orders.expiration_date == self.expiration_date)
                      & (orders.command % 2 == self.command % 2) #ODD for BUY and EVEN for SELL
-                     & OP_BUY <= orders.command
-                     & orders.command <= OP_SELLSTOP]
+                     & (OP_BUY <= orders.command)
+                     & (orders.command <= OP_SELLSTOP)]
 
         return res.__len__() > 0
 
@@ -66,7 +66,7 @@ class MTxPyBotBase:
         self.magic_number = magic_number
         self._rates = {}
         self._state = BOT_STATE_INIT
-        self._active_orders = pd.DataFrame(columns=list(OrderModel.__dict__.keys()))
+        self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
         self.indicators = indicators if indicators else []
         self._symbol = None
 
@@ -92,15 +92,17 @@ class MTxPyBotBase:
             rates =  json_dict["rates"]
             self._update_rates_data(self._symbol, rates)
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
-            on_tick_result.append(self.on_tick_handler(), ignore_index=False)
-            return on_tick_result.to_csv()
+            on_tick_result = on_tick_result.append(self.on_tick_handler(), ignore_index=False)
+            res = on_tick_result.to_csv()
+            return res
 
         if self._state == BOT_STATE_ORDERS:
-            orders_df = pd.DataFrame(json_dict["orders"])
+            orders_df = pd.DataFrame(json_dict["orders"], columns=list(OrderModel().__dict__.keys()))
             prev_orders = self._active_orders
             if not orders_df.equals(prev_orders):
                 self.on_orders_changed_handler(prev_orders, orders_df)
-            self._active_orders = orders_df
+            if orders_df.__len__() > 0:
+                self._active_orders = orders_df
             return RESULT_SUCCESS
 
         #except Exception as e:

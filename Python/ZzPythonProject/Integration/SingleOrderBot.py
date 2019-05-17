@@ -15,7 +15,8 @@ class SingleOrderBot(MTxPyBotBase):
         return RESULT_SUCCESS
 
     def on_tick_handler(self) -> pd.DataFrame:
-        orders = self._active_orders[self._symbol]
+        orders = self._active_orders
+        orders = orders[orders.symbol == self._symbol]
         buy_positions = orders[orders.command == OP_BUY]
         sell_positions = orders[orders.command == OP_SELL]
         buy_orders = orders[orders.command == OP_BUYSTOP]# | orders.command == OP_BUYLIMIT]
@@ -39,8 +40,8 @@ class SingleOrderBot(MTxPyBotBase):
                     order.ticket = ticket
                     result = result.append(order.to_df(), ignore_index=False)
 
-            if self.remove_opposite_orders:
-                self.cmd_remove_orders(sell_orders)
+                if self.remove_opposite_orders:
+                    result = result.append(self.cmd_remove_orders(sell_orders), ignore_index=False)
 
         if sell_positions.__len__() == 0:
             order = self.sell_condition()
@@ -58,9 +59,9 @@ class SingleOrderBot(MTxPyBotBase):
                     order.command = OP_UPDATE
                     order.ticket = ticket
                     result = result.append(order.to_df(), ignore_index=False)
-            if self.remove_opposite_orders:
 
-                self.cmd_remove_orders(buy_orders)
+                if self.remove_opposite_orders:
+                    result = result.append(self.cmd_remove_orders(buy_orders), ignore_index=False)
 
         return result
 

@@ -19,7 +19,7 @@ class MTxPyIndicatorBase:
             start_index = self.calculated_data.last_valid_index()+1 if self.calculated_data.last_valid_index() else 0
             self.calculated_data = self.calculated_data.append(df.loc[start_index:][["timestamp"]],ignore_index=False)
 
-        df_updates = df.loc[max(self.last_calculated,0):]
+        df_updates = df.loc[max(self.last_calculated, 0):]
         #self.calculated_data = self.calculated_data.append(df_updates[["timestamp"]], ignore_index=False)
         #self.calculated_data = self.calculated_data[~self.calculated_data.timestamp.duplicated(keep='last')]
 
