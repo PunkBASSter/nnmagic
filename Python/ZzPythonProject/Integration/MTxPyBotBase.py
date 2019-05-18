@@ -68,7 +68,6 @@ class MTxPyBotBase:
         self._state = BOT_STATE_INIT
         self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
         self.indicators = indicators if indicators else []
-        self._symbol = None
 
     def process_json_data(self, data_updates: str) -> str:
         """Callback handling pipe updates as JSON string containing mandatory 'state' object and optional data."""
@@ -82,17 +81,17 @@ class MTxPyBotBase:
             return RESULT_SUCCESS
 
         if self._state == BOT_STATE_INIT_COMPLETE:
-            self._symbol = json_dict["symbol"]
-            result = self.on_init_handler()
-            self._recalculate_indicators(self._symbol)
+            symbol = json_dict["symbol"]
+            result = self.on_init_handler(symbol)#TODO decide how to deal with self._symbol
+            self._recalculate_indicators(symbol)
             return result
 
         if self._state == BOT_STATE_TICK:
-            self._symbol = json_dict["symbol"]
-            rates =  json_dict["rates"]
+            symbol = json_dict["symbol"]
+            rates = json_dict["rates"]
             self._update_rates_data(self._symbol, rates)
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
-            on_tick_result = on_tick_result.append(self.on_tick_handler(), ignore_index=False)
+            on_tick_result = on_tick_result.append(self.on_tick_handler(symbol), ignore_index=False)
             res = on_tick_result.to_csv()
             return res
 
@@ -130,11 +129,11 @@ class MTxPyBotBase:
         for ind in self.indicators:
             ind.calculate(self._rates[symbol])
 
-    def on_init_handler(self) -> str:
+    def on_init_handler(self, symbol: str) -> str:
         """Implement initialization of dependencies"""
         raise NotImplementedError("Abstract method 'on_init_handler' must be implemented.")
 
-    def on_tick_handler(self) -> pd.DataFrame:
+    def on_tick_handler(self, symbol: str) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
         raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
 
