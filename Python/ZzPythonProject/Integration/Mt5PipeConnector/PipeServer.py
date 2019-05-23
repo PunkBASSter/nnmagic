@@ -1,7 +1,4 @@
-import time
-import sys
 import win32pipe, win32file, pywintypes
-import json
 
 
 def pipe_server(process_str_callback):
