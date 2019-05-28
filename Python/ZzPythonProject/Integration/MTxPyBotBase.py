@@ -62,8 +62,9 @@ class OrderModel:
 class MTxPyBotBase:
     """Encapsulates basic API calls and structure of MT bot business logic."""
 
-    def __init__(self, magic_number: int, indicators=None):
+    def __init__(self, magic_number: int, indicators=None, only_new_bars=True):
         self.magic_number = magic_number
+        self._only_new_bars = only_new_bars
         self._rates = {}
         self._state = BOT_STATE_INIT
         self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
@@ -77,7 +78,7 @@ class MTxPyBotBase:
         #try:
         if self._state == BOT_STATE_INIT:
             self._symbol = json_dict["symbol"]
-            self._update_rates_data(self._symbol, json_dict["rates"])
+            self._update_rates_data_check_new_bar(self._symbol, json_dict["rates"])
             return RESULT_SUCCESS
 
         if self._state == BOT_STATE_INIT_COMPLETE:
@@ -89,8 +90,10 @@ class MTxPyBotBase:
         if self._state == BOT_STATE_TICK:
             symbol = json_dict["symbol"]
             rates = json_dict["rates"]
-            self._update_rates_data(self._symbol, rates)
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
+            new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, rates)
+            if new_bar_detected:
+                on_tick_result = on_tick_result.append(self.on_new_bar_handler(symbol), ignore_index=False)
             on_tick_result = on_tick_result.append(self.on_tick_handler(symbol), ignore_index=False)
             res = on_tick_result.to_csv()
             return res
@@ -109,20 +112,27 @@ class MTxPyBotBase:
 
         return RESULT_ERROR
 
-    def _update_rates_data(self, symbol: str, rates_upd: []) -> None:
+    def _update_rates_data_check_new_bar(self, symbol: str, rates_upd: []) -> bool:
+        """Returns True if new bars found"""
+        # First launch initialization
         updates_df = pd.DataFrame(rates_upd)
         if not self._rates.__contains__(symbol):
             self._rates[symbol] = updates_df
-            return
+            return True
 
+        # Update data, no new bars
         cur_rates = self._rates[symbol]
         if cur_rates["timestamp"].loc[cur_rates.last_valid_index()] ==\
                 updates_df["timestamp"].loc[updates_df.first_valid_index()]:
             self._rates[symbol].loc[cur_rates.last_valid_index()] = updates_df.loc[updates_df.first_valid_index()]
             self._recalculate_indicators(symbol)
-            return
+            return False
 
+        # Append new bars
+        #TODO Make sure that NO duplicated timestamps, all old bars are updated
         self._rates[symbol] = cur_rates.append(updates_df, ignore_index=True)
+        self._recalculate_indicators(symbol)
+        return True
         #self._rates[symbol] = cur_rates[~cur_rates.timestamp.duplicated(keep='last')]
 
     def _recalculate_indicators(self, symbol):
@@ -136,6 +146,9 @@ class MTxPyBotBase:
     def on_tick_handler(self, symbol: str) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
         raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
+
+    def on_new_bar_handler(self, symbol: str) -> pd.DataFrame:
+        pass
 
     def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
         pass
