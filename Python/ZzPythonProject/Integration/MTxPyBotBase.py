@@ -120,9 +120,11 @@ class MTxPyBotBase:
             self._timeframe = json_dict["timeframe"]
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
             new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
-            self._recalculate_indicators(self._symbol, self._timeframe, new_bar_detected)
-            on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe, new_bar_detected),
-                                                   ignore_index=False)
+
+            if not self._only_new_bars or new_bar_detected:
+                self._recalculate_indicators(self._symbol, self._timeframe, new_bar_detected)
+                on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe),
+                                                       ignore_index=False)
             res = on_tick_result.to_csv()
             return res
 
@@ -179,7 +181,7 @@ class MTxPyBotBase:
         """Implement initialization of dependencies"""
         return RESULT_SUCCESS#raise NotImplementedError("Abstract method 'on_init_complete_handler' must be implemented.")
 
-    def on_tick_handler(self, symbol: str, timeframe: int, new_bar=False) -> pd.DataFrame:
+    def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
         return self._active_orders#raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
 
