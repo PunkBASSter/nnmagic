@@ -20,26 +20,26 @@ class MTxPyFastZigZag(MTxPyIndicatorBase):
             zz[0] = df.close[0]
         for i in range(last, self.calculated_data.__len__()):
             if self.direction > 0:
-                if df.high[i] > zz[last]:
-                    zz[last] = self.empty_value
-                    zz[i] = df.high[i]
+                if df.high.iloc[i] > zz.iloc[last]:
+                    zz.iloc[last] = self.empty_value
+                    zz.iloc[i] = df.high.iloc[i]
                     last = i
                 else:
-                    if df.low[i] < zz[last] - self.get_depth():
-                        zz[i] = df.low[i]
+                    if df.low.iloc[i] < zz.iloc[last] - self.get_depth():
+                        zz.iloc[i] = df.low.iloc[i]
                         self.direction = -1
-                        self.last_swing_size = zz[last] - zz[i]
+                        self.last_swing_size = zz.iloc[last] - zz.iloc[i]
                         last = i
             else:
-                if df.low[i] < zz[last]:
-                    zz[last] = self.empty_value
-                    zz[i] = df.low[i]
+                if df.low.iloc[i] < zz.iloc[last]:
+                    zz.iloc[last] = self.empty_value
+                    zz.iloc[i] = df.low.iloc[i]
                     last = i
                 else:
-                    if df.high[i] > zz[last] + self.get_depth():
-                        zz[i] = df.high[i]
+                    if df.high.iloc[i] > zz.iloc[last] + self.get_depth():
+                        zz.iloc[i] = df.high.iloc[i]
                         self.direction = 1
-                        self.last_swing_size = zz[i] - zz[last]
+                        self.last_swing_size = zz.iloc[i] - zz.iloc[last]
                         last = i
         self.last_calculated = last
         self.calculated_data[self.series_names[0]] = zz
