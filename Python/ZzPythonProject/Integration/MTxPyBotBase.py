@@ -88,7 +88,7 @@ class MTxPyBotBase:
     _symbol: str
     _timeframe: int
 
-    def __init__(self, magic_number: int, indicators=None, only_new_bars=True):
+    def __init__(self, magic_number: int, indicators=None, only_new_bars=False):
         self.magic_number = magic_number
         self._only_new_bars = only_new_bars
         self._rates = pd.DataFrame(index=["symbol","timeframe","timestamp"])
