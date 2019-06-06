@@ -22,8 +22,32 @@ OP_UPDATE = 8
 OP_REMOVE = 9
 OP_NONE = 1000
 
+TF_STR = {
+    1: "PERIOD_M1",
+    2: "PERIOD_M2",
+    3: "PERIOD_M3",
+    4: "PERIOD_M4",
+    5: "PERIOD_M5",
+    6: "PERIOD_M6",
+    10: "PERIOD_M10",
+    12: "PERIOD_M12",
+    15: "PERIOD_M15",
+    20: "PERIOD_M20",
+    30: "PERIOD_M30",
+    60: "PERIOD_H1",
+    120: "PERIOD_H2",
+    180: "PERIOD_H3",
+    240: "PERIOD_H4",
+    360: "PERIOD_H6",
+    480: "PERIOD_H8",
+    720: "PERIOD_H12",
+    1440: "PERIOD_D1",
+    10080: "PERIOD_W1",
+    43200: "PERIOD_MN1"
+}
 
-class OrderModel:
+
+class CommandModel:
     def __init__(self, **kwargs):
         self.command: int = -1
         self.open_price: float = -1.0
@@ -61,14 +85,16 @@ class OrderModel:
 
 class MTxPyBotBase:
     """Encapsulates basic API calls and structure of MT bot business logic."""
+    _symbol: str
+    _timeframe: int
 
     def __init__(self, magic_number: int, indicators=None, only_new_bars=True):
         self.magic_number = magic_number
         self._only_new_bars = only_new_bars
-        self._rates = {}
+        self._rates = pd.DataFrame(index=["symbol","timeframe","timestamp"])
         self._state = BOT_STATE_INIT
-        self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
-        self.indicators = indicators if indicators else []
+        self._active_orders = pd.DataFrame(columns=list(CommandModel().__dict__.keys()))
+        self.indicators = indicators if indicators else pd.DataFrame(index=["symbol","timeframe"])
 
     def process_json_data(self, data_updates: str) -> str:
         """Callback handling pipe updates as JSON string containing mandatory 'state' object and optional data."""
@@ -78,28 +104,30 @@ class MTxPyBotBase:
         #try:
         if self._state == BOT_STATE_INIT:
             self._symbol = json_dict["symbol"]
-            self._update_rates_data_check_new_bar(self._symbol, json_dict["rates"])
+            self._timeframe = json_dict["timeframe"]
+            self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
             return RESULT_SUCCESS
 
         if self._state == BOT_STATE_INIT_COMPLETE:
-            symbol = json_dict["symbol"]
-            result = self.on_init_handler(symbol)#TODO decide how to deal with self._symbol
-            self._recalculate_indicators(symbol)
+            self._symbol = json_dict["symbol"]
+            self._timeframe = json_dict["timeframe"]
+            result = self.on_init_handler(self._symbol, self._timeframe)
+            self._recalculate_indicators(self._symbol, self._timeframe, True)
             return result
 
         if self._state == BOT_STATE_TICK:
-            symbol = json_dict["symbol"]
-            rates = json_dict["rates"]
-            on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
-            new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, rates)
-            if new_bar_detected:
-                on_tick_result = on_tick_result.append(self.on_new_bar_handler(symbol), ignore_index=False)
-            on_tick_result = on_tick_result.append(self.on_tick_handler(symbol), ignore_index=False)
+            self._symbol = json_dict["symbol"]
+            self._timeframe = json_dict["timeframe"]
+            on_tick_result = pd.DataFrame(columns=list(CommandModel().__dict__.keys()))
+            new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
+            self._recalculate_indicators(self._symbol, self._timeframe, new_bar_detected)
+            on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe, new_bar_detected),
+                                                   ignore_index=False)
             res = on_tick_result.to_csv()
             return res
 
         if self._state == BOT_STATE_ORDERS:
-            orders_df = pd.DataFrame(json_dict["orders"], columns=list(OrderModel().__dict__.keys()))
+            orders_df = pd.DataFrame(json_dict["orders"], columns=list(CommandModel().__dict__.keys()))
             prev_orders = self._active_orders
             if not orders_df.equals(prev_orders):
                 self.on_orders_changed_handler(prev_orders, orders_df)
@@ -112,43 +140,48 @@ class MTxPyBotBase:
 
         return RESULT_ERROR
 
-    def _update_rates_data_check_new_bar(self, symbol: str, rates_upd: []) -> bool:
+    @staticmethod
+    def _create_rates_index(symbol: str, timeframe: int, df: pd.DataFrame) -> pd.DataFrame:
+        df["symbol"] = pd.Series(symbol, index=df.index)
+        df["timeframe"] = pd.Series(timeframe, index=df.index, dtype=int)
+        df.set_index(["symbol", "timeframe", "timestamp"], inplace=True)
+        return df
+
+    def _update_rates_data_check_new_bar(self, symbol: str, timeframe: int, rates_upd: []) -> bool:
         """Returns True if new bars found"""
-        # First launch initialization
         updates_df = pd.DataFrame(rates_upd)
-        if not self._rates.__contains__(symbol):
-            self._rates[symbol] = updates_df
+        self._create_rates_index(symbol, timeframe, updates_df)
+
+        if self._rates.empty:
+            self._rates = updates_df
             return True
 
         # Update data, no new bars
-        cur_rates = self._rates[symbol]
-        if cur_rates["timestamp"].loc[cur_rates.last_valid_index()] ==\
-                updates_df["timestamp"].loc[updates_df.first_valid_index()]:
-            self._rates[symbol].loc[cur_rates.last_valid_index()] = updates_df.loc[updates_df.first_valid_index()]
-            self._recalculate_indicators(symbol)
+        tmp_df = updates_df.loc[symbol, timeframe]
+        self._rates.loc[symbol, timeframe].update(tmp_df) #robust or not ????
+        last_ts = self._rates.loc[symbol, timeframe].tail(1).index.to_list()[0]
+
+        new_bars = tmp_df[tmp_df.index > last_ts]
+        if new_bars.empty:
             return False
 
-        # Append new bars
-        #TODO Make sure that NO duplicated timestamps, all old bars are updated
-        self._rates[symbol] = cur_rates.append(updates_df, ignore_index=True)
-        self._recalculate_indicators(symbol)
+        # Appending new bars to DF TODO Replace with UPDATE (...outer)
+        new_bars.reset_index(inplace=True)
+        self._create_rates_index(symbol, timeframe, new_bars)
+        self._rates = self._rates.append(new_bars)
         return True
-        #self._rates[symbol] = cur_rates[~cur_rates.timestamp.duplicated(keep='last')]
 
-    def _recalculate_indicators(self, symbol):
+    def _recalculate_indicators(self, symbol, timeframe, new_bar=False):
         for ind in self.indicators:
-            ind.calculate(self._rates[symbol])
+            ind.calculate(self._rates,  symbol, timeframe, new_bar)
 
-    def on_init_handler(self, symbol: str) -> str:
+    def on_init_handler(self, symbol: str, timeframe: int) -> str:
         """Implement initialization of dependencies"""
-        raise NotImplementedError("Abstract method 'on_init_handler' must be implemented.")
+        return RESULT_SUCCESS#raise NotImplementedError("Abstract method 'on_init_handler' must be implemented.")
 
-    def on_tick_handler(self, symbol: str) -> pd.DataFrame:
+    def on_tick_handler(self, symbol: str, timeframe: int, new_bar=False) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
-        raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
-
-    def on_new_bar_handler(self, symbol: str) -> pd.DataFrame:
-        pass
+        return self._active_orders#raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
 
     def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
         pass
@@ -160,7 +193,7 @@ class MTxPyBotBase:
         return self._active_orders[(self._active_orders.command >= OP_BUYLIMIT)
                                    | (self._active_orders.command <= OP_SELLSTOP)]
 
-    def order_exists(self, order: OrderModel) -> bool:
+    def order_exists(self, order: CommandModel) -> bool:
         return order.check_exists(self._active_orders)
 
     def get_lots(self):

@@ -12,7 +12,7 @@ class MTxPyIndicatorBase:
         self.series_names = series_names
         self.calculated_data = pd.DataFrame(columns=["timestamp"] + series_names)
 
-    def calculate(self, df: pd.DataFrame) -> pd.DataFrame:
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: int) -> pd.DataFrame:
         self.source_df = df
 
         if df.__len__() > self.calculated_data.__len__():
