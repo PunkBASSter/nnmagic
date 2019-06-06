@@ -11,19 +11,20 @@ class MTxPyIndicatorBase:
         self.series_names = series_names
         self.empty_value = empty_value
         self.series_names = series_names
-        self.calculated_data = pd.DataFrame(columns=["timestamp"] + series_names)
+        self.calculated_data = pd.DataFrame(index=["symbol","timeframe","timestamp"],columns=series_names)
 
-    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: int) -> pd.DataFrame:
+    def calculate(self, df: pd.DataFrame, symbol: str, timeframe: int, new_bar: bool) -> pd.DataFrame:
+        """df is supposed to be a Rates DF with (Symbol, Timeframe, Timestamp) multiindex."""
         self.source_df = df
 
-        if df.__len__() > self.calculated_data.__len__():
-            start_index = self.calculated_data.last_valid_index()+1 if self.calculated_data.last_valid_index() else 0
-            self.calculated_data = self.calculated_data.append(df.loc[start_index:][["timestamp"]],ignore_index=False)
+        df_ix = df[(df.index.get_level_values("symbol") == symbol)
+                   & (df.index.get_level_values("timeframe") == timeframe)].index
 
-        df_updates = df.loc[max(self.last_calculated, 0):]
-        #self.calculated_data = self.calculated_data.append(df_updates[["timestamp"]], ignore_index=False)
-        #self.calculated_data = self.calculated_data[~self.calculated_data.timestamp.duplicated(keep='last')]
+        ix_diff = df_ix.difference(self.calculated_data.index)
+        diff_padding = pd.DataFrame(self.empty_value, columns=self.series_names, index=ix_diff)
+        self.calculated_data = self.calculated_data.append(diff_padding)
 
+        df_updates = df.iloc[max(self.last_calculated, 0):]
         self.calculated_data = self._calculate_internal(df_updates)
         return self.calculated_data
 
