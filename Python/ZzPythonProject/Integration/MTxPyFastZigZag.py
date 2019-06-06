@@ -17,7 +17,7 @@ class MTxPyFastZigZag(MTxPyIndicatorBase):
         zz = self.calculated_data[self.series_names[0]]
         last = self.last_calculated
         if last <= 0:
-            zz[0] = df.close[0]
+            zz.iloc[0] = df.close.iloc[0]
         for i in range(last, self.calculated_data.__len__()):
             if self.direction > 0:
                 if df.high.iloc[i] > zz.iloc[last]:

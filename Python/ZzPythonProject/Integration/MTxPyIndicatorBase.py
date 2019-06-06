@@ -11,7 +11,7 @@ class MTxPyIndicatorBase:
         self.series_names = series_names
         self.empty_value = empty_value
         self.series_names = series_names
-        self.calculated_data = pd.DataFrame(index=["symbol","timeframe","timestamp"],columns=series_names)
+        self.calculated_data = pd.DataFrame()
 
     def calculate(self, df: pd.DataFrame, symbol: str, timeframe: int, new_bar: bool) -> pd.DataFrame:
         """df is supposed to be a Rates DF with (Symbol, Timeframe, Timestamp) multiindex."""
@@ -25,6 +25,7 @@ class MTxPyIndicatorBase:
         self.calculated_data = self.calculated_data.append(diff_padding)
 
         df_updates = df.iloc[max(self.last_calculated, 0):]
+
         self.calculated_data = self._calculate_internal(df_updates)
         return self.calculated_data
 
