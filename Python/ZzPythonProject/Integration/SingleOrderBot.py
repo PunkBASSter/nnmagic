@@ -30,7 +30,7 @@ class SingleOrderBot(MTxPyBotBase):
                 order.symbol = symbol
 
                 if order.check_exists(orders):
-                    result = result.append(CommandModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
+                    result = result.append(OrderModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
 
                 if buy_orders.__len__() == 0:
                     result = result.append(order.to_df(), ignore_index=False)
@@ -50,7 +50,7 @@ class SingleOrderBot(MTxPyBotBase):
                 order.symbol = symbol
 
                 if order.check_exists(orders):
-                    result = result.append(CommandModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
+                    result = result.append(OrderModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
 
                 if sell_orders.__len__() == 0:
                     result = result.append(order.to_df(), ignore_index=False)
@@ -69,16 +69,16 @@ class SingleOrderBot(MTxPyBotBase):
         last_zz = self.zigzag.get_last_values(4)
         if last_zz[2] < last_zz[3]:
             tp = last_zz[3] + (last_zz[3] - last_zz[2])
-            return CommandModel(command=OP_BUYSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=tp,
-                                expiration_date=0)
+            return OrderModel(command=OP_BUYSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=tp,
+                              expiration_date=0)
         return None
 
     def sell_condition(self):
         last_zz = self.zigzag.get_last_values(4)
         if last_zz[2] > last_zz[3]:
             tp = last_zz[3] - (last_zz[2]-last_zz[3])
-            return CommandModel(command=OP_SELLSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=tp,
-                                expiration_date=0)
+            return OrderModel(command=OP_SELLSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=tp,
+                              expiration_date=0)
         return None
 
     def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):

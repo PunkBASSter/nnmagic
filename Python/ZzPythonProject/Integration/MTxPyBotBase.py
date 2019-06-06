@@ -47,7 +47,7 @@ TF_STR = {
 }
 
 
-class CommandModel:
+class OrderModel:
     def __init__(self, **kwargs):
         self.command: int = -1
         self.open_price: float = -1.0
@@ -93,7 +93,7 @@ class MTxPyBotBase:
         self._only_new_bars = only_new_bars
         self._rates = pd.DataFrame(index=["symbol","timeframe","timestamp"])
         self._state = BOT_STATE_INIT
-        self._active_orders = pd.DataFrame(columns=list(CommandModel().__dict__.keys()))
+        self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
         self.indicators = indicators if indicators else pd.DataFrame(index=["symbol","timeframe"])
 
     def process_json_data(self, data_updates: str) -> str:
@@ -118,7 +118,7 @@ class MTxPyBotBase:
         if self._state == BOT_STATE_TICK:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
-            on_tick_result = pd.DataFrame(columns=list(CommandModel().__dict__.keys()))
+            on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
             new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
             self._recalculate_indicators(self._symbol, self._timeframe, new_bar_detected)
             on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe, new_bar_detected),
@@ -127,7 +127,7 @@ class MTxPyBotBase:
             return res
 
         if self._state == BOT_STATE_ORDERS:
-            orders_df = pd.DataFrame(json_dict["orders"], columns=list(CommandModel().__dict__.keys()))
+            orders_df = pd.DataFrame(json_dict["orders"], columns=list(OrderModel().__dict__.keys()))
             prev_orders = self._active_orders
             if not orders_df.equals(prev_orders):
                 self.on_orders_changed_handler(prev_orders, orders_df)
@@ -193,7 +193,7 @@ class MTxPyBotBase:
         return self._active_orders[(self._active_orders.command >= OP_BUYLIMIT)
                                    | (self._active_orders.command <= OP_SELLSTOP)]
 
-    def order_exists(self, order: CommandModel) -> bool:
+    def order_exists(self, order: OrderModel) -> bool:
         return order.check_exists(self._active_orders)
 
     def get_lots(self):

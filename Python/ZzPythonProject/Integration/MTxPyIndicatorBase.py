@@ -3,6 +3,7 @@ import math
 
 
 class MTxPyIndicatorBase:
+    """Contains default basis for single symbol-timeframe indicator"""
     source_df: pd.DataFrame
 
     def __init__(self,series_names: [], empty_value=math.nan):
