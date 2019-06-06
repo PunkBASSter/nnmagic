@@ -11,7 +11,7 @@ class SingleOrderBot(MTxPyBotBase):
         super().__init__(magic_number, [self.zigzag])
         self.remove_opposite_orders = remove_opposite_orders
 
-    def on_init_handler(self, symbol: str) -> str:
+    def on_init_complete_handler(self, symbol: str) -> str:
         return RESULT_SUCCESS
 
     def on_tick_handler(self, symbol: str) -> pd.DataFrame:

@@ -111,7 +111,7 @@ class MTxPyBotBase:
         if self._state == BOT_STATE_INIT_COMPLETE:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
-            result = self.on_init_handler(self._symbol, self._timeframe)
+            result = self.on_init_complete_handler(self._symbol, self._timeframe)
             self._recalculate_indicators(self._symbol, self._timeframe, True)
             return result
 
@@ -175,9 +175,9 @@ class MTxPyBotBase:
         for ind in self.indicators:
             ind.calculate(self._rates,  symbol, timeframe, new_bar)
 
-    def on_init_handler(self, symbol: str, timeframe: int) -> str:
+    def on_init_complete_handler(self, symbol: str, timeframe: int) -> str:
         """Implement initialization of dependencies"""
-        return RESULT_SUCCESS#raise NotImplementedError("Abstract method 'on_init_handler' must be implemented.")
+        return RESULT_SUCCESS#raise NotImplementedError("Abstract method 'on_init_complete_handler' must be implemented.")
 
     def on_tick_handler(self, symbol: str, timeframe: int, new_bar=False) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
