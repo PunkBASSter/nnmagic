@@ -70,6 +70,7 @@ string OrderToJsonObject(OrderItem &item)
 {
    string result = "{";
    
+   result += AddString("symbol", item.symbol);
    result += AddInt("command", item.command);
    result += AddFloat("open_price", item.open);
    result += AddFloat("stop_loss", item.stop_loss);
