@@ -112,7 +112,7 @@ class MTxPyBotBase:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
             result = self.on_init_complete_handler(self._symbol, self._timeframe)
-            self._recalculate_indicators(self._symbol, self._timeframe, True)
+            self._recalculate_indicators(self._symbol, self._timeframe)
             return result
 
         if self._state == BOT_STATE_TICK:
@@ -122,7 +122,7 @@ class MTxPyBotBase:
             new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
 
             if not self._only_new_bars or new_bar_detected:
-                self._recalculate_indicators(self._symbol, self._timeframe, new_bar_detected)
+                self._recalculate_indicators(self._symbol, self._timeframe)
                 on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe),
                                                        ignore_index=False)
             res = on_tick_result.to_csv()
@@ -158,24 +158,17 @@ class MTxPyBotBase:
             self._rates = updates_df
             return True
 
-        # Update data, no new bars
-        tmp_df = updates_df.loc[symbol, timeframe]
-        self._rates.loc[symbol, timeframe].update(tmp_df) #robust or not ????
-        last_ts = self._rates.loc[symbol, timeframe].tail(1).index.to_list()[0]
+        tmp_df = updates_df.loc[(symbol, timeframe,):(symbol, timeframe,)]
+        self._rates.loc[(symbol, timeframe,):(symbol, timeframe,)].update(tmp_df) #robust or not ????
 
-        new_bars = tmp_df[tmp_df.index > last_ts]
-        if new_bars.empty:
-            return False
+        ix_diff = tmp_df.index.difference(self._rates.index)
+        prev_len = self._rates.__len__()
+        self._rates = self._rates.append(tmp_df.loc[ix_diff])
+        return self._rates.__len__() > prev_len
 
-        # Appending new bars to DF TODO Replace with UPDATE (...outer)
-        new_bars.reset_index(inplace=True)
-        self._create_rates_index(symbol, timeframe, new_bars)
-        self._rates = self._rates.append(new_bars)
-        return True
-
-    def _recalculate_indicators(self, symbol, timeframe, new_bar=False):
+    def _recalculate_indicators(self, symbol, timeframe):
         for ind in self.indicators:
-            ind.calculate(self._rates,  symbol, timeframe, new_bar)
+            ind.calculate(self._rates,  symbol, timeframe)
 
     def on_init_complete_handler(self, symbol: str, timeframe: int) -> str:
         """Implement initialization of dependencies"""

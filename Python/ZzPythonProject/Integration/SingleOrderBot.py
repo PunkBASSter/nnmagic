@@ -5,9 +5,9 @@ from MTxPyDeltaZigZag import *
 class SingleOrderBot(MTxPyBotBase):
     zigzag: MTxPyDeltaZigZag
 
-    def __init__(self, magic_number, zz_depth, remove_opposite_orders):
+    def __init__(self, symbol, timeframe, magic_number, zz_depth, remove_opposite_orders):
 
-        self.zigzag = MTxPyDeltaZigZag(zz_depth)
+        self.zigzag = MTxPyDeltaZigZag(symbol, timeframe, zz_depth)
         super().__init__(magic_number, [self.zigzag])
         self.remove_opposite_orders = remove_opposite_orders
 
@@ -83,5 +83,5 @@ class SingleOrderBot(MTxPyBotBase):
 
 
 if __name__ == '__main__':
-    bot = SingleOrderBot(123123, zz_depth=0.003, remove_opposite_orders=True)
+    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.003, remove_opposite_orders=True)
     pipe.pipe_server(bot.process_json_data)
