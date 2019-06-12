@@ -4,7 +4,7 @@
 //|                        https://www.mql5.com/en/users/punkbasster |
 //+------------------------------------------------------------------+
 //#include "BuffersDataProvider.mqh"
-#include <PunkBASSter/Integration/RatesDataProvider.mqh>
+#include <PunkBASSter/Integration/RatesExportUnit.mqh>
 #include <PunkBASSter/Integration/DataToTextExport.mqh>
 #include <PunkBASSter/Integration/DataFromTextImport.mqh>
 #include <PunkBASSter/Integration/TextIO.mqh>
@@ -16,24 +16,20 @@ input datetime HistoryStart = D'2016.01.01';
 input int ChunkSize = 100;
 input int InpMagic = 123123;
 
-#define BOT_STATE_INIT "INIT"
-#define BOT_STATE_INIT_COMPLETE "INIT_COMPLETE"
-#define BOT_STATE_TICK "TICK"
-#define BOT_STATE_ORDERS "ORDERS"
-#define SUCCESS_RESULT "OK"
-#define ERROR_RESULT "ERROR"
-
-CRatesDataProvider *ratesProvider;
-CTextIO dataTextIO;
+//CRatesDataProvider *ratesProvider;
+CTextIO *dataTextIO;
 CTrade *trade;
-int _ticket;
+CRatesExportUnit *hoursExport;
+CRatesExportUnit *daysExport;
+
+//int _ticket;
 
 string GenerateUniquePipeName()
 {
    return StringFormat("DataPipe_%d", rand());
 }
 
-void PrintData()
+/*void PrintData()
 {
    MqlRates rates[];
    int total = ratesProvider.GetRatesUpdates(rates);
@@ -44,10 +40,13 @@ void PrintData()
    }
 }
 
-string ExportRates(string state, string symbol = NULL)
+string ExportRates(string state, string symbol = NULL, ENUM_TIMEFRAMES period = 0)
 {
+   //WARNING! Symbol and Period must be synchronized with dataTextIO!
+   //TODO encapsulate all export infrastructure in 1 class with common settings.
    string response = ERROR_RESULT;
    if(symbol==NULL)symbol=Symbol();
+   if(period==0)period=(ENUM_TIMEFRAMES)Period();
 
    MqlRates rates[];
    int copied = ratesProvider.GetRatesUpdates(rates);
@@ -58,6 +57,8 @@ string ExportRates(string state, string symbol = NULL)
       string jsonChunk = "{" +
          AddString("state",state) +
          AddString("symbol",symbol) +
+         AddInt("timeframe",period) +
+         AddInt("tf_seconds",PeriodSeconds(period)) +
          AddInt("timestamp",(int)TimeCurrent()) +
          AddInt("size",ArraySize(chunk)) +
          RatesArrayToJson(chunk)+
@@ -73,11 +74,13 @@ string ExportRates(string state, string symbol = NULL)
    return response;
 }
 
-string SendState(string state, string symbol = NULL)
+string SendState(string state, string symbol = NULL, ENUM_TIMEFRAMES period = 0)
 {
    if(symbol==NULL)symbol=Symbol();
-   return dataTextIO.ExportDataGetTrade("{"+AddString("state",state)+AddString("symbol",symbol,"")+"}");
+   if(period==0)period=(ENUM_TIMEFRAMES)Period();
+   return dataTextIO.ExportDataGetTrade("{"+AddString("state",state)+AddString("symbol",symbol)+AddInt("timeframe",period,"")+"}");
 }
+*/
 
 string ExportOrders(string state = BOT_STATE_ORDERS)
 {
@@ -126,18 +129,24 @@ bool ProcessOrderItems(OrderItem &orderItems[])
 
 int OnInit()
 {
+   dataTextIO = new CTextIO;
    dataTextIO.Open(StringFormat("\\\\.\\pipe\\%s", DataPipeName));  
-   ratesProvider = new CRatesDataProvider(Symbol(), (ENUM_TIMEFRAMES)Period(), HistoryStart);   
+   hoursExport = new CRatesExportUnit(dataTextIO,HistoryStart,Symbol(),PERIOD_H1);
+   daysExport = new CRatesExportUnit(dataTextIO,HistoryStart,Symbol(),PERIOD_D1);
+   //ratesProvider = new CRatesDataProvider(Symbol(), (ENUM_TIMEFRAMES)Period(), HistoryStart);   
    trade = new CTrade(InpMagic,20);
    
-   string result = ExportRates(BOT_STATE_INIT);
+   string result = hoursExport.ExportRates(BOT_STATE_INIT);
    Print("Init result: "+result);
-   
    if(result != SUCCESS_RESULT)
-      //todo log
+      return(INIT_FAILED);
+   
+   result = daysExport.ExportRates(BOT_STATE_INIT);
+   Print("Init result: "+result);
+   if(result != SUCCESS_RESULT)
       return(INIT_FAILED);
       
-   result = SendState(BOT_STATE_INIT_COMPLETE);
+   result = hoursExport.SendState(BOT_STATE_INIT_COMPLETE);
    if(result != SUCCESS_RESULT)
       return(INIT_FAILED);
 
@@ -150,8 +159,11 @@ int OnInit()
 void OnTick()
 {
    ExportOrders();
-   string response = ExportRates(BOT_STATE_TICK);
-   
+   string response = daysExport.ExportRates(BOT_STATE_TICK);
+   if (StringLen(response)<10) //short status message TODO PROCESS ERRORS
+      return;
+
+   response = hoursExport.ExportRates(BOT_STATE_TICK);
    if (StringLen(response)<10) //short status message TODO PROCESS ERRORS
       return;
 
@@ -167,8 +179,9 @@ void OnTick()
 
 void OnDeinit(const int reason)
 {
-   delete ratesProvider;
+   //delete ratesProvider;
    dataTextIO.Close();
+   delete dataTextIO;
 }
 
 void OnTrade()

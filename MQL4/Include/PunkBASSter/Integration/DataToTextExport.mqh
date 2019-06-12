@@ -39,14 +39,14 @@ string RatesToJsonObject(MqlRates &rates)
 {
    string result = "{";
    result += AddInt("timestamp", (int)rates.time);
-   result += AddInt("time_current", (int)TimeCurrent()); //might be useless
+   //result += AddInt("time_current", (int)TimeCurrent()); //might be useless
    result += AddFloat("open", rates.open);
    result += AddFloat("high", rates.high);
    result += AddFloat("low", rates.low);
    result += AddFloat("close", rates.close);
-   result += AddInt("tick_volume", rates.tick_volume);
-   result += AddInt("spread", rates.spread);
-   result += AddInt("real_volume", rates.real_volume,"}");
+   result += AddInt("tick_volume", rates.tick_volume,"}");
+   //result += AddInt("spread", rates.spread);
+   //result += AddInt("real_volume", rates.real_volume,"}");
    return result;
 }
 
