@@ -20,6 +20,9 @@ class SingleOrderBot(MTxPyBotBase):
         sell_orders = orders[orders.command == OP_SELLSTOP]# | orders.command == OP_SELLLIMIT]
         result = pd.DataFrame()#TODO add columns? - HZ
 
+        if buy_positions.__len__() > 0 or sell_positions.__len__() > 0:
+            return result
+
         if buy_positions.__len__() == 0:
             order = self.buy_condition()
             if order:
