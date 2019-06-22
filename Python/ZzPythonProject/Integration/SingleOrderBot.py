@@ -20,8 +20,8 @@ class SingleOrderBot(MTxPyBotBase):
         sell_orders = orders[orders.command == OP_SELLSTOP]# | orders.command == OP_SELLLIMIT]
         result = pd.DataFrame()#TODO add columns? - HZ
 
-        if buy_positions.__len__() > 0 or sell_positions.__len__() > 0:
-            return result
+#        if buy_positions.__len__() > 0 or sell_positions.__len__() > 0:
+#            return result
 
         if buy_positions.__len__() == 0:
             order = self.buy_condition()
@@ -30,7 +30,7 @@ class SingleOrderBot(MTxPyBotBase):
                 order.symbol = symbol
 
                 if order.check_exists(orders):
-                    result = result.append(OrderModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
+                    result = result.append(OrderModel(command=OP_NONE).to_df(), ignore_index=False)
 
                 if buy_orders.__len__() == 0:
                     result = result.append(order.to_df(), ignore_index=False)
@@ -50,7 +50,7 @@ class SingleOrderBot(MTxPyBotBase):
                 order.symbol = symbol
 
                 if order.check_exists(orders):
-                    result = result.append(OrderModel(command=OP_NONE).to_df().to_csv(), ignore_index=False)
+                    result = result.append(OrderModel(command=OP_NONE).to_df(), ignore_index=False)
 
                 if sell_orders.__len__() == 0:
                     result = result.append(order.to_df(), ignore_index=False)
@@ -86,5 +86,5 @@ class SingleOrderBot(MTxPyBotBase):
 
 
 if __name__ == '__main__':
-    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.003, remove_opposite_orders=True)
+    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.3, remove_opposite_orders=True)
     pipe.pipe_server(bot.process_json_data)
