@@ -22,7 +22,7 @@ class MTxPyFastZigZag(MTxPyIndicatorBase):
             zz.iloc[0] = (high.iloc[0]+low.iloc[0])/2
         for ix in upd_df.index.values:
             if self.direction > 0:
-                if high[ix] > zz[last]:
+                if high[ix] >= zz[last]:
                     zz[last] = self.empty_value
                     zz[ix] = high[ix]
                     last = ix
@@ -33,7 +33,7 @@ class MTxPyFastZigZag(MTxPyIndicatorBase):
                         self.last_swing_size = zz[last] - zz[ix]
                         last = ix
             else:
-                if low[ix] < zz[last]:
+                if low[ix] <= zz[last]:
                     zz[last] = self.empty_value
                     zz[ix] = low[ix]
                     last = ix
