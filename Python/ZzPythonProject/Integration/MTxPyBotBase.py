@@ -133,8 +133,7 @@ class MTxPyBotBase:
             prev_orders = self._active_orders
             if not orders_df.equals(prev_orders):
                 self.on_orders_changed_handler(prev_orders, orders_df)
-            if orders_df.__len__() > 0:
-                self._active_orders = orders_df
+            self._active_orders = orders_df
             return RESULT_SUCCESS
 
         #except Exception as e:
@@ -164,6 +163,7 @@ class MTxPyBotBase:
         ix_diff = tmp_df.index.difference(self._rates.index)
         prev_len = self._rates.__len__()
         self._rates = self._rates.append(tmp_df.loc[ix_diff])
+        self._rates.sort_index(inplace=True)
         return self._rates.__len__() > prev_len
 
     def _recalculate_indicators(self, symbol, timeframe):
