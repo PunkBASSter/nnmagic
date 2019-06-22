@@ -67,17 +67,17 @@ class SingleOrderBot(MTxPyBotBase):
 
     def buy_condition(self):
         last_zz = self.zigzag.get_last_values(4)
-        if last_zz[2] < last_zz[3]:
-            tp = last_zz[3] + (last_zz[3] - last_zz[2])
-            return OrderModel(command=OP_BUYSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=tp,
+        if last_zz[1] < last_zz[0]:
+            tp = last_zz[0] + (last_zz[0] - last_zz[1])
+            return OrderModel(command=OP_BUYSTOP, open_price=last_zz[0], stop_loss=last_zz[1], take_profit=tp,
                               expiration_date=0)
         return None
 
     def sell_condition(self):
         last_zz = self.zigzag.get_last_values(4)
-        if last_zz[2] > last_zz[3]:
-            tp = last_zz[3] - (last_zz[2]-last_zz[3])
-            return OrderModel(command=OP_SELLSTOP, open_price=last_zz[3], stop_loss=last_zz[2], take_profit=tp,
+        if last_zz[1] > last_zz[0]:
+            tp = last_zz[0] - (last_zz[1]-last_zz[0])
+            return OrderModel(command=OP_SELLSTOP, open_price=last_zz[0], stop_loss=last_zz[1], take_profit=tp,
                               expiration_date=0)
         return None
 
@@ -86,5 +86,5 @@ class SingleOrderBot(MTxPyBotBase):
 
 
 if __name__ == '__main__':
-    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.3, remove_opposite_orders=True)
+    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.5, remove_opposite_orders=True)
     pipe.pipe_server(bot.process_json_data)
