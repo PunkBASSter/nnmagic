@@ -119,6 +119,15 @@ class MTxPyBotBase:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
+
+        #DBG ON TICK PERFORMANCE
+            #if self._active_orders.__len__() == 0:
+            #    on_tick_result.command = OrderModel(command=OP_BUYLIMIT,lots=0.1,open_price=0.001)
+            #else:
+            #    on_tick_result.command = OrderModel(command=OP_REMOVE,ticket=self._active_orders.iloc[0].ticket)
+            #return on_tick_result.to_csv()
+        #/DBG PERF
+
             new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
 
             if not self._only_new_bars or new_bar_detected:

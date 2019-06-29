@@ -1,6 +1,9 @@
-from Integration.MTxPyBotBase import *
-from MTxPyDeltaZigZag import *
-
+import Integration.MTxPyBotBase as bb
+import pandas as pd
+from Integration.MTxPyBotBase import OrderModel
+from Integration.MTxPyBotBase import MTxPyBotBase
+from MTxPyDeltaZigZag import MTxPyDeltaZigZag
+import Mt5PipeConnector.PipeServer as pipe
 
 class SingleOrderBot(MTxPyBotBase):
     zigzag: MTxPyDeltaZigZag
@@ -14,10 +17,10 @@ class SingleOrderBot(MTxPyBotBase):
     def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
         orders = self._active_orders
         orders = orders[orders.symbol == symbol]
-        buy_positions = orders[orders.command == OP_BUY]
-        sell_positions = orders[orders.command == OP_SELL]
-        buy_orders = orders[orders.command == OP_BUYSTOP]# | orders.command == OP_BUYLIMIT]
-        sell_orders = orders[orders.command == OP_SELLSTOP]# | orders.command == OP_SELLLIMIT]
+        buy_positions = orders[orders.command == bb.OP_BUY]
+        sell_positions = orders[orders.command == bb.OP_SELL]
+        buy_orders = orders[orders.command == bb.OP_BUYSTOP]# | orders.command == OP_BUYLIMIT]
+        sell_orders = orders[orders.command == bb.OP_SELLSTOP]# | orders.command == OP_SELLLIMIT]
         result = pd.DataFrame()#TODO add columns? - HZ
 
 #        if buy_positions.__len__() > 0 or sell_positions.__len__() > 0:
@@ -30,13 +33,13 @@ class SingleOrderBot(MTxPyBotBase):
                 order.symbol = symbol
 
                 if order.check_exists(orders):
-                    result = result.append(OrderModel(command=OP_NONE).to_df(), ignore_index=False)
+                    result = result.append(OrderModel(command=bb.OP_NONE).to_df(), ignore_index=False)
 
                 if buy_orders.__len__() == 0:
                     result = result.append(order.to_df(), ignore_index=False)
                 else:
-                    ticket = buy_orders.first().ticket
-                    order.command = OP_UPDATE
+                    ticket = buy_orders.iloc[0].ticket
+                    order.command = bb.OP_UPDATE
                     order.ticket = ticket
                     result = result.append(order.to_df(), ignore_index=False)
 
@@ -50,13 +53,13 @@ class SingleOrderBot(MTxPyBotBase):
                 order.symbol = symbol
 
                 if order.check_exists(orders):
-                    result = result.append(OrderModel(command=OP_NONE).to_df(), ignore_index=False)
+                    result = result.append(OrderModel(command=bb.OP_NONE).to_df(), ignore_index=False)
 
                 if sell_orders.__len__() == 0:
                     result = result.append(order.to_df(), ignore_index=False)
                 else:
-                    ticket = sell_orders.first().ticket
-                    order.command = OP_UPDATE
+                    ticket = sell_orders.iloc[0].ticket
+                    order.command = bb.OP_UPDATE
                     order.ticket = ticket
                     result = result.append(order.to_df(), ignore_index=False)
 
@@ -69,7 +72,7 @@ class SingleOrderBot(MTxPyBotBase):
         last_zz = self.zigzag.get_last_values(4)
         if last_zz[1] < last_zz[0]:
             tp = last_zz[0] + (last_zz[0] - last_zz[1])
-            return OrderModel(command=OP_BUYSTOP, open_price=last_zz[0], stop_loss=last_zz[1], take_profit=tp,
+            return OrderModel(command=bb.OP_BUYSTOP, open_price=last_zz[0], stop_loss=last_zz[1], take_profit=tp,
                               expiration_date=0)
         return None
 
@@ -77,7 +80,7 @@ class SingleOrderBot(MTxPyBotBase):
         last_zz = self.zigzag.get_last_values(4)
         if last_zz[1] > last_zz[0]:
             tp = last_zz[0] - (last_zz[1]-last_zz[0])
-            return OrderModel(command=OP_SELLSTOP, open_price=last_zz[0], stop_loss=last_zz[1], take_profit=tp,
+            return OrderModel(command=bb.OP_SELLSTOP, open_price=last_zz[0], stop_loss=last_zz[1], take_profit=tp,
                               expiration_date=0)
         return None
 
@@ -86,5 +89,5 @@ class SingleOrderBot(MTxPyBotBase):
 
 
 if __name__ == '__main__':
-    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.5, remove_opposite_orders=True)
+    bot = SingleOrderBot("EURUSD", 60, 123123, zz_depth=0.5, remove_opposite_orders=False)
     pipe.pipe_server(bot.process_json_data)
