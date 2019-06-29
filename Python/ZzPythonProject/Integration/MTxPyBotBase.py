@@ -166,13 +166,8 @@ class MTxPyBotBase:
             self._rates = updates_df
             return True
 
-        tmp_df = updates_df.loc[(symbol, timeframe,):(symbol, timeframe,)]
-        self._rates.loc[(symbol, timeframe,):(symbol, timeframe,)].update(tmp_df) #robust or not ????
-
-        ix_diff = tmp_df.index.difference(self._rates.index)
         prev_len = self._rates.__len__()
-        self._rates = self._rates.append(tmp_df.loc[ix_diff])
-        self._rates.sort_index(inplace=True)
+        self._rates = updates_df.combine_first(self._rates)
         return self._rates.__len__() > prev_len
 
     def _recalculate_indicators(self, symbol, timeframe):
