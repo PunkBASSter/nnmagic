@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import Mt5PipeConnector.PipeServer as pipe
+from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 
 FLOAT_CMP_PRECISION = 0.00001
 
@@ -79,7 +80,7 @@ class OrderModel:
     @property
     def direction(self) -> int:
         if OP_BUY <= self.command <= OP_SELLSTOP:
-            return 1 if self.command % 2 == 0 else -1
+            return 1 if (self.command & 1) == 0 else -1
         return 0
 
 
@@ -87,11 +88,12 @@ class MTxPyBotBase:
     """Encapsulates basic API calls and structure of MT bot business logic."""
     _symbol: str
     _timeframe: int
+    _rates: SymbolPeriodTimeContainer
 
     def __init__(self, magic_number: int, indicators=None, only_new_bars=False):
         self.magic_number = magic_number
         self._only_new_bars = only_new_bars
-        self._rates = pd.DataFrame(index=["symbol","timeframe","timestamp"])
+        self._rates = SymbolPeriodTimeContainer()
         self._state = BOT_STATE_INIT
         self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
         self.indicators = indicators if indicators else pd.DataFrame(index=["symbol","timeframe"])
@@ -105,20 +107,23 @@ class MTxPyBotBase:
         if self._state == BOT_STATE_INIT:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
-            self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
+            df = pd.DataFrame(json_dict["rates"])
+            df.set_index("timestamp",inplace=True)
+            self._rates.add_values_with_key_check(self._symbol, self._timeframe,df)
             return RESULT_SUCCESS
 
         if self._state == BOT_STATE_INIT_COMPLETE:
-            self._symbol = json_dict["symbol"]
-            self._timeframe = json_dict["timeframe"]
-            result = self.on_init_complete_handler(self._symbol, self._timeframe)
-            self._recalculate_indicators(self._symbol, self._timeframe)
+            result = self.on_init_complete_handler()
+            self._init_indicators()
             return result
 
         if self._state == BOT_STATE_TICK:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
+            df = pd.DataFrame(json_dict["rates"])
+            df.set_index("timestamp", inplace=True)
+            new_bar_detected = self._rates.add_values_by_existing_key(self._symbol, self._timeframe, df) > 0
 
         #DBG ON TICK PERFORMANCE
             #if self._active_orders.__len__() == 0:
@@ -127,8 +132,6 @@ class MTxPyBotBase:
             #    on_tick_result.command = OrderModel(command=OP_REMOVE,ticket=self._active_orders.iloc[0].ticket)
             #return on_tick_result.to_csv()
         #/DBG PERF
-
-            new_bar_detected = self._update_rates_data_check_new_bar(self._symbol, self._timeframe, json_dict["rates"])
 
             if not self._only_new_bars or new_bar_detected:
                 self._recalculate_indicators(self._symbol, self._timeframe)
@@ -150,33 +153,20 @@ class MTxPyBotBase:
 
         return RESULT_ERROR
 
-    @staticmethod
-    def _create_rates_index(symbol: str, timeframe: int, df: pd.DataFrame) -> pd.DataFrame:
-        df["symbol"] = pd.Series(symbol, index=df.index)
-        df["timeframe"] = pd.Series(timeframe, index=df.index, dtype=int)
-        df.set_index(["symbol", "timeframe", "timestamp"], inplace=True)
-        return df
+    def get_source_container(self):
+        return self._rates
 
-    def _update_rates_data_check_new_bar(self, symbol: str, timeframe: int, rates_upd: []) -> bool:
-        """Returns True if new bars found"""
-        updates_df = pd.DataFrame(rates_upd)
-        self._create_rates_index(symbol, timeframe, updates_df)
-
-        if self._rates.empty:
-            self._rates = updates_df
-            return True
-
-        prev_len = self._rates.__len__()
-        self._rates = updates_df.combine_first(self._rates)
-        return self._rates.__len__() > prev_len
+    def _init_indicators(self):
+        for ind in self.indicators:
+            ind.initialize()
 
     def _recalculate_indicators(self, symbol, timeframe):
         for ind in self.indicators:
             ind.calculate(self._rates,  symbol, timeframe)
 
-    def on_init_complete_handler(self, symbol: str, timeframe: int) -> str:
+    def on_init_complete_handler(self) -> str:
         """Implement initialization of dependencies"""
-        return RESULT_SUCCESS#raise NotImplementedError("Abstract method 'on_init_complete_handler' must be implemented.")
+        return RESULT_SUCCESS
 
     def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""

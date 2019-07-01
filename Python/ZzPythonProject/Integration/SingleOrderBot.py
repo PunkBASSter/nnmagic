@@ -10,9 +10,16 @@ class SingleOrderBot(MTxPyBotBase):
 
     def __init__(self, symbol, timeframe, magic_number, zz_depth, remove_opposite_orders):
 
-        self.zigzag = MTxPyDeltaZigZag(symbol, timeframe, zz_depth)
+        self.symbol = symbol
+        self.timeframe = timeframe
+        self.zz_depth = zz_depth
+        self.zigzag = None
         super().__init__(magic_number, [self.zigzag])
         self.remove_opposite_orders = remove_opposite_orders
+
+    def on_init_complete_handler(self):
+        self.zigzag = MTxPyDeltaZigZag(self, self.symbol, self.timeframe, self.zz_depth)
+        self.indicators = [self.zigzag]
 
     def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
         orders = self._active_orders
