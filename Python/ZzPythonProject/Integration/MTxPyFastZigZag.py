@@ -2,8 +2,6 @@ from MTxPyIndicatorBase import *
 
 
 class MTxPyFastZigZag(MTxPyIndicatorBase):
-    depth: float
-
     def __init__(self, caller, symbol, timeframe, depth):
         """Requires depth size in pips"""
         super().__init__(caller, {symbol: [timeframe]}, series_names=["zigzag"])

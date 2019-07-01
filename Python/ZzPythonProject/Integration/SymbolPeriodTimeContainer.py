@@ -3,7 +3,9 @@ import pandas as pd
 
 class SymbolPeriodTimeContainer:
     """Container using indexing as tuples of (<Symbol>,<Period(Time Frame)>,<Timestamp>)."""
-    _symbol_tfs_dfs = {}
+
+    def __init__(self):
+        self._symbol_tfs_dfs = {}
 
     def init_keys(self, keys: {}):
         """Consumes a dictionary where key is a Symbol name and value is a list of int timeframes"""

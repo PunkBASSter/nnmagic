@@ -6,7 +6,6 @@ from MTxPyDeltaZigZag import MTxPyDeltaZigZag
 import Mt5PipeConnector.PipeServer as pipe
 
 class SingleOrderBot(MTxPyBotBase):
-    zigzag: MTxPyDeltaZigZag
 
     def __init__(self, symbol, timeframe, magic_number, zz_depth, remove_opposite_orders):
 
@@ -20,6 +19,7 @@ class SingleOrderBot(MTxPyBotBase):
     def on_init_complete_handler(self):
         self.zigzag = MTxPyDeltaZigZag(self, self.symbol, self.timeframe, self.zz_depth)
         self.indicators = [self.zigzag]
+        return bb.RESULT_SUCCESS
 
     def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
         orders = self._active_orders

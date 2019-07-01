@@ -162,7 +162,7 @@ class MTxPyBotBase:
 
     def _recalculate_indicators(self, symbol, timeframe):
         for ind in self.indicators:
-            ind.calculate(self._rates,  symbol, timeframe)
+            ind.calculate(symbol, timeframe)
 
     def on_init_complete_handler(self) -> str:
         """Implement initialization of dependencies"""
