@@ -25,9 +25,7 @@ class TestsDataTransform(unittest.TestCase):
                 raise AssertionError(msg)
 
     def assertCollectionsNotEqual(self, series1, series2, msg="Series are equal, but should not.", tolerance=0.0001):
-        lst1 = series1.tolist()
-        lst2 = series2.tolist()
-        for i in range(0, len(lst1)):
+        for i in range(0, series1.__len__()):
             if abs(series1[i] - series2[i]) > tolerance:
                 return
         raise AssertionError(msg)

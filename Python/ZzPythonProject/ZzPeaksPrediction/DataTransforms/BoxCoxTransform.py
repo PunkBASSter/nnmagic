@@ -5,8 +5,11 @@ import pandas as pd
 
 
 class BoxCoxTransform(TransformBase):
-    lmbda = None
-    alpha = None
+
+    def __init__(self):
+        super().__init__()
+        self.lmbda = None
+        self.alpha = None
 
     def transform(self, series: pd.Series):
 

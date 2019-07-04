@@ -3,13 +3,11 @@ from DataTransforms.TransformBase import *
 
 
 class ValueScaleTransform(TransformBase):
-    target_abs_level : float
-    multiplier : float
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.target_abs_level = 1
         self.multiplier = 1
-        super().__init__(**kwargs)
 
     def transform(self, series: pd.Series):
         res = series.values * self._calc_multiplier(series.values)

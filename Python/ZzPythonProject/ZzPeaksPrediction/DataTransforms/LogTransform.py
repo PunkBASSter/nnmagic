@@ -6,15 +6,11 @@ import numpy as np
 
 class LogTransform(TransformBase):
 
-    log_base : float
-    log_base_limit : float
-    inv_log_base_multiplier : float
-
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.log_base = None
         self.log_base_limit = 9999999
         self.inv_log_base_multiplier = 1
-        super().__init__(**kwargs)
 
     def transform(self, series: pd.Series):
 

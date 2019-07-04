@@ -3,13 +3,11 @@ from DataTransforms.TransformBase import *
 
 
 class ValueShiftTransform(TransformBase):
-    extra_offset : float
-    final_shift : float
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.extra_offset = 1.0
         self.final_shift = 0
-        super().__init__(**kwargs)
 
     def transform(self, series: pd.Series):
         res = series.values + self._calc_shift(series)

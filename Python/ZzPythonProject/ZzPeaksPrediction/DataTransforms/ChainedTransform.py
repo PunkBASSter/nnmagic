@@ -4,9 +4,8 @@ from DataTransforms.TransformBase import TransformBase
 
 class ChainedTransform(TransformBase):
 
-    _transformation_sequence = None
-
     def __init__(self, *args):
+        super().__init__()
         self._transformation_sequence = []
         for arg in args:
             self._transformation_sequence.append(arg)
