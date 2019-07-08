@@ -46,7 +46,7 @@ class MTxPyIndicatorBase:
 
     def _is_calculation_required(self, symbol, period, timestamp) -> bool:
         return symbol in self.symbol_periods and period in self.symbol_periods[symbol] and\
-               self.last_calculated[symbol][period].tail(1).index.values[0] <= timestamp
+               self.last_calculated[symbol][period] <= timestamp
 
     def _get_padding_df(self, index: pd.Index) -> pd.DataFrame:
         return pd.DataFrame(self.empty_value, columns=self.series_names, index=index)
