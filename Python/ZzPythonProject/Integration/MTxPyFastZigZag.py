@@ -2,9 +2,9 @@ from MTxPyIndicatorBase import *
 
 
 class MTxPyFastZigZag(MTxPyIndicatorBase):
-    def __init__(self, caller, symbol, timeframe, depth):
+    def __init__(self, data_source, symbol, timeframe, depth):
         """Requires depth size in pips"""
-        super().__init__(caller, {symbol: [timeframe]}, series_names=["zigzag"])
+        super().__init__(data_source, {symbol: [timeframe]}, series_names=["zigzag"])
         self.symbol = symbol
         self.period = timeframe
         self.direction = 1

@@ -132,9 +132,9 @@ class MTxPyBotBase:
             #    on_tick_result.command = OrderModel(command=OP_REMOVE,ticket=self._active_orders.iloc[0].ticket)
             #return on_tick_result.to_csv()
         #/DBG PERF
-
+            last_timestamp = df.tail(1).index.values[0]
             if not self._only_new_bars or new_bar_detected:
-                self._recalculate_indicators(self._symbol, self._timeframe)
+                self._recalculate_indicators(self._symbol, self._timeframe, last_timestamp)
                 on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe),
                                                        ignore_index=False)
             res = on_tick_result.to_csv()
@@ -153,16 +153,21 @@ class MTxPyBotBase:
 
         return RESULT_ERROR
 
-    def get_source_container(self):
+    #data_source methods:
+    def get_source_container(self) -> SymbolPeriodTimeContainer:
         return self._rates
+
+    def calculate(self, symbol, period, timestamp) -> pd.DataFrame:
+        return self._rates[symbol][period]
+    #/data_source methods
 
     def _init_indicators(self):
         for ind in self.indicators:
             ind.initialize()
 
-    def _recalculate_indicators(self, symbol, timeframe):
+    def _recalculate_indicators(self, symbol, timeframe, timestamp):
         for ind in self.indicators:
-            ind.calculate(symbol, timeframe)
+            ind.calculate(symbol, timeframe, timestamp)
 
     def on_init_complete_handler(self) -> str:
         """Implement initialization of dependencies"""
