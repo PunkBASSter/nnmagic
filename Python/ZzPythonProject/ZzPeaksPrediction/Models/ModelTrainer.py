@@ -10,18 +10,12 @@ cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build 
 
 
 class ModelTrainer:
-    _params = None
-    _x = None
-    _l = None
-    _z = None
-    _trainer = None
-
     def __init__(self, params, z = None):
+        self._trainer = None
         self._params = params
         self.init_model()
         if not z is None: self._z = z
         self.init_trainer()
-
 
     def create_model(self):
         """Create the model for time series prediction"""

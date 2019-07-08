@@ -53,17 +53,17 @@ def print_mse(samples_to_process):
         print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
 print_mse(["train", "val", "test"])
 
-#evaluator = ModelEvaluator(z, params)
-#f, a = plt.subplots(3, 1, figsize=(12, 8))
-#for j, sample in enumerate( ["train", "val", "test"] ):
-#    results = evaluator.evaluate( smp_x[sample], params.learn_batch_size )
-#    a[j].plot( smp_y[sample], label=sample + ' raw' )
-#    a[j].plot( results, label=sample + ' predicted' )
-#[i.legend() for i in a]
-#plt.show()
+evaluator = ModelEvaluator(z, params)
+f, a = plt.subplots(3, 1, figsize=(12, 8))
+for j, sample in enumerate( ["train", "val", "test"] ):
+    results = evaluator.evaluate( smp_x[sample], params.learn_batch_size )
+    a[j].plot( smp_y[sample], label=sample + ' raw' )
+    a[j].plot( results, label=sample + ' predicted' )
+[i.legend() for i in a]
+plt.show()
 
 #EVALUATION
-#eval_res = evaluator.evaluate(smp_x["test"])
+eval_res = evaluator.evaluate(smp_x["test"])
 test_series = sample_generator.test_sample_series #Should be initialized after sample generation :)
 test_x, original_y = sample_generator.generate_test_input_sequences(test_series)
 interp_results = []
@@ -74,6 +74,7 @@ for x in test_x:
     pre_res_concat = pd.concat([pd.Series(trans_seq), pd.Series(nn_res_unpacked)], ignore_index=True)
     inv_transformed_sq = sample_generator._last_used_transform.inv_transform(pre_res_concat) #TODO КАСТЫЛЬ С СОЗДАНИЕМ СЕРИЙ
     interp_results.append(inv_transformed_sq[inv_transformed_sq.__len__()-1]) #TODO ALSO КАСТЫЛЬ АНТИ СИКВЕНС!!!
+
 
 def write_output(inp_df: pd.DataFrame, interp_results: []):
     test_frame = (inp_df.iloc[inp_df.__len__()-interp_results.__len__():]).copy()

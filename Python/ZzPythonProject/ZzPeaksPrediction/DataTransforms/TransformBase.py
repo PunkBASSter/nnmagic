@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 
 class TransformBase:
 
@@ -16,3 +17,12 @@ class TransformBase:
     def __repr__(self):
         # todo implement method
         return f"{type(self)}"
+
+    def save_transform(self, path):
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load_transform(path):
+        with open(path, 'rb') as f:
+            return pickle.load(f)
