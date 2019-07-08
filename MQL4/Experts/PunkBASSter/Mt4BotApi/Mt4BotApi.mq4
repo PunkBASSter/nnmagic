@@ -10,77 +10,23 @@
 #include <PunkBASSter/Integration/TextIO.mqh>
 #include <PunkBASSter/Common/Trade.mqh>
 
-//input string ControlPipeName = "ControlPipe"; //Used to request for data pipes.
 input string DataPipeName = "MyDataPipe";
 input datetime HistoryStart = D'2016.01.01';
 input int ChunkSize = 100;
 input int InpMagic = 123123;
 
-//CRatesDataProvider *ratesProvider;
 CTextIO *dataTextIO;
 CTrade *trade;
 CRatesExportUnit *hoursExport;
 CRatesExportUnit *daysExport;
 
-//int _ticket;
+datetime testStartTime = 0;
+datetime testEndTime = 0;
 
 string GenerateUniquePipeName()
 {
    return StringFormat("DataPipe_%d", rand());
 }
-
-/*void PrintData()
-{
-   MqlRates rates[];
-   int total = ratesProvider.GetRatesUpdates(rates);
-   
-   for (int i=0; i<total; i++)
-   {
-      Print(__FUNCTION__ + " : " +RatesToJsonObject(rates[i]));
-   }
-}
-
-string ExportRates(string state, string symbol = NULL, ENUM_TIMEFRAMES period = 0)
-{
-   //WARNING! Symbol and Period must be synchronized with dataTextIO!
-   //TODO encapsulate all export infrastructure in 1 class with common settings.
-   string response = ERROR_RESULT;
-   if(symbol==NULL)symbol=Symbol();
-   if(period==0)period=(ENUM_TIMEFRAMES)Period();
-
-   MqlRates rates[];
-   int copied = ratesProvider.GetRatesUpdates(rates);
-   for(int chunkStart = 0; chunkStart < copied; chunkStart+=ChunkSize)
-   {
-      MqlRates chunk[];
-      int chunkCopied = ArrayCopy(chunk,rates,0,chunkStart,ChunkSize);
-      string jsonChunk = "{" +
-         AddString("state",state) +
-         AddString("symbol",symbol) +
-         AddInt("timeframe",period) +
-         AddInt("tf_seconds",PeriodSeconds(period)) +
-         AddInt("timestamp",(int)TimeCurrent()) +
-         AddInt("size",ArraySize(chunk)) +
-         RatesArrayToJson(chunk)+
-      "}";
-      response = dataTextIO.ExportDataGetTrade(jsonChunk);
-      
-      if (response != SUCCESS_RESULT)
-      {
-         Print("Sent chunk: ", jsonChunk);
-         PrintFormat("Sent chunk from %d. Response \"%s\" received.", chunkStart, response);
-      }
-   }
-   return response;
-}
-
-string SendState(string state, string symbol = NULL, ENUM_TIMEFRAMES period = 0)
-{
-   if(symbol==NULL)symbol=Symbol();
-   if(period==0)period=(ENUM_TIMEFRAMES)Period();
-   return dataTextIO.ExportDataGetTrade("{"+AddString("state",state)+AddString("symbol",symbol)+AddInt("timeframe",period,"")+"}");
-}
-*/
 
 string ExportOrders(string state = BOT_STATE_ORDERS)
 {
@@ -179,7 +125,8 @@ void OnTick()
 
 void OnDeinit(const int reason)
 {
-   //delete ratesProvider;
+   delete hoursExport;
+   delete daysExport;
    dataTextIO.Close();
    delete dataTextIO;
 }
