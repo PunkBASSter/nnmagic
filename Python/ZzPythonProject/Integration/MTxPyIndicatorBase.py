@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import copy
 from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 
 
@@ -12,7 +13,9 @@ class MTxPyIndicatorBase:
         self.empty_value = empty_value
         self.calculated_data = SymbolPeriodTimeContainer()
         self.last_calculated = {}
+        self.is_offline = offline
         self.calculate = self._calc_offline if offline else self._calc_live
+        self.calculated_data_offline = None
 
     def initialize(self):
         source_data_container = self.data_source.get_source_container()
@@ -25,8 +28,8 @@ class MTxPyIndicatorBase:
                 self.calculated_data[symbol][period] = padding
                 self.calculated_data = self._calculate_internal(symbol, period, source_data_container[symbol][period])
 
-    #def calculate(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
-    #    return self.calculation_strategy(symbol, period, timestamp)
+        if self.is_offline:
+            self.calculated_data_offline = copy.deepcopy(self.calculated_data)
 
     def _calc_live(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
         if self._is_calculation_required(symbol, period, timestamp):
@@ -44,8 +47,9 @@ class MTxPyIndicatorBase:
 
     def _calc_offline(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
         self.last_calculated[symbol][period] = timestamp
-        res = self.calculated_data[symbol][period]
-        return self.calculated_data
+        tmp = self.calculated_data[symbol][period]
+        self.calculated_data_offline[symbol][period] = tmp[tmp.index <= timestamp]
+        return self.calculated_data_offline
 
     def _calculate_internal(self, symbol, period, df: pd.DataFrame) -> SymbolPeriodTimeContainer: #DF and
         """Override this to process data updates and return last calculated value"""
