@@ -1,5 +1,5 @@
 import numpy as np
-from DataTransforms.TransformBase import *
+from Transforms.TransformBase import *
 
 
 class ValueScaleTransform(TransformBase):

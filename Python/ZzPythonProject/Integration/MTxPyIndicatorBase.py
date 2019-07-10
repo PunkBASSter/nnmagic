@@ -5,13 +5,14 @@ from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 
 class MTxPyIndicatorBase:
     """Contains default basis for indicator"""
-    def __init__(self, data_source, symbol_periods: {}, series_names: [], empty_value=math.nan):
+    def __init__(self, data_source, symbol_periods: {}, series_names: [], empty_value=math.nan, offline=False):
         self.data_source = data_source
         self.symbol_periods = symbol_periods
         self.series_names = series_names
         self.empty_value = empty_value
         self.calculated_data = SymbolPeriodTimeContainer()
         self.last_calculated = {}
+        self.calculate = self._calc_offline if offline else self._calc_live
 
     def initialize(self):
         source_data_container = self.data_source.get_source_container()
@@ -24,9 +25,10 @@ class MTxPyIndicatorBase:
                 self.calculated_data[symbol][period] = padding
                 self.calculated_data = self._calculate_internal(symbol, period, source_data_container[symbol][period])
 
-    def calculate(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
-        """timestamp_df is supposed to be a Rates DF with (Symbol, Timeframe, Timestamp) multiindex."""
+    #def calculate(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
+    #    return self.calculation_strategy(symbol, period, timestamp)
 
+    def _calc_live(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
         if self._is_calculation_required(symbol, period, timestamp):
             calculated_df = self.calculated_data[symbol][period]
             timestamp_df = self.data_source.calculate(symbol, period, timestamp)
@@ -38,6 +40,11 @@ class MTxPyIndicatorBase:
             df_updates = timestamp_df.loc[self.last_calculated[symbol][period]:]
             self.calculated_data = self._calculate_internal(symbol, period, df_updates)
 
+        return self.calculated_data
+
+    def _calc_offline(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
+        self.last_calculated[symbol][period] = timestamp
+        res = self.calculated_data[symbol][period]
         return self.calculated_data
 
     def _calculate_internal(self, symbol, period, df: pd.DataFrame) -> SymbolPeriodTimeContainer: #DF and

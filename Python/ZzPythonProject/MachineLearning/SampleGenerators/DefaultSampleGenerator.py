@@ -1,7 +1,7 @@
 import pandas as pd
 import DataFrameHelperFunctions as dfhf
 from Normalizers.Normalizer import Normalizer
-from Common.ModelParameters import ModelParameters
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
 
 class DefaultSampleGenerator:
     _normalizer = None

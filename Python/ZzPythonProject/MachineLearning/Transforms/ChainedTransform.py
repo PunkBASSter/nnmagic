@@ -1,5 +1,5 @@
 import pandas as pd
-from DataTransforms.TransformBase import TransformBase
+from Transforms.TransformBase import TransformBase
 
 
 class ChainedTransform(TransformBase):

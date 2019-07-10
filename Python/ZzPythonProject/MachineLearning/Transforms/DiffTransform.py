@@ -1,4 +1,4 @@
-from DataTransforms.LeftShiftedTransformBase import *
+from Transforms.LeftShiftedTransformBase import *
 
 
 class DiffTransform(LeftShiftedTransformBase):

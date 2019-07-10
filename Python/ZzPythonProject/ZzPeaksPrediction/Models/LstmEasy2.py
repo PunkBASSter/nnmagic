@@ -1,7 +1,5 @@
-import math
 from matplotlib import pyplot as plt
 import numpy as np
-import os
 import pandas as pd
 import time
 
@@ -9,9 +7,9 @@ import cntk as C
 import cntk.tests.test_utils
 from cntk.ops.functions import load_model
 
-import HelperFunctions.DataFrameHelperFunctions as dfhf
-import HelperFunctions.ListDataHelperFunctions as ldhf
-from Common.ModelParameters import ModelParameters
+import DataFrameHelperFunctions as dfhf
+import ListDataHelperFunctions as ldhf
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 

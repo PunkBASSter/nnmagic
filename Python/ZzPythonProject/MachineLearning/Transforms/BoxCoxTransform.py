@@ -1,5 +1,5 @@
 from scipy.stats import morestats as stats
-from DataTransforms.TransformBase import *
+from Transforms.TransformBase import *
 import numpy as np
 import pandas as pd
 

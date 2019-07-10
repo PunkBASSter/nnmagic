@@ -1,6 +1,8 @@
 import pandas as pd
 from Integration.MTxPyIndicatorBase import MTxPyIndicatorBase
-from ZzPeaksPrediction.DataTransforms import ChainedTransform
+import ChainedTransform
+
+
 #import ChainedTransform
 
 

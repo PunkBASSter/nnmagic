@@ -1,4 +1,4 @@
-from DataTransforms.TransformBase import *
+from Transforms.TransformBase import *
 import math
 import pandas as pd
 import numpy as np

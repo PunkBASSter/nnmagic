@@ -86,11 +86,10 @@ class OrderModel:
 
 class MTxPyBotBase:
     """Encapsulates basic API calls and structure of MT bot business logic."""
-    _symbol: str
-    _timeframe: int
-    _rates: SymbolPeriodTimeContainer
 
     def __init__(self, magic_number: int, indicators=None, only_new_bars=False):
+        self._symbol = None
+        self._timeframe = None
         self.magic_number = magic_number
         self._only_new_bars = only_new_bars
         self._rates = SymbolPeriodTimeContainer()

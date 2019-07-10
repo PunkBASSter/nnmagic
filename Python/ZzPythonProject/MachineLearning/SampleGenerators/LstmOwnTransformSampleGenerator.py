@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from DataTransforms.TransformBase import TransformBase
-from Common.ModelParameters import ModelParameters
+from TransformBase import TransformBase
 import copy
 from time import gmtime, strftime
 
@@ -10,15 +9,15 @@ class LstmOwnTransformSampleGenerator:
     clean_transform_instance: TransformBase = None
     data_frame: pd.DataFrame = None
     _last_used_transform: TransformBase = None
-    _params: ModelParameters() = None
 
     test_sample_series: pd.Series = None
 
-    def __init__(self, params: ModelParameters, transform: TransformBase):
+    def __init__(self, params, transform: TransformBase):
         self._params = params
         self.clean_transform_instance = transform
+        self._params = None
 
-    def generate_learning_samples(self) -> [dict, dict]:
+    def generate_learning_samples(self) -> (dict, dict):
         df = self.load_data()
         data = pd.Series(df[self._params.data_value_column])
         train, val, test = self.split_into_samples(data)
@@ -41,7 +40,7 @@ class LstmOwnTransformSampleGenerator:
         return df.shape[1] == 2 and df.shape[0] > df.shape[1]
 
 #TODO GENERATE WHOLE SEQUENCE AND ONLY THEN SPLIT INTO X and Y
-    def generate_nn_input(self, series: pd.Series) -> [np.ndarray, np.ndarray]:
+    def generate_nn_input(self, series: pd.Series) -> (np.ndarray, np.ndarray):
         print( f"Generation for series of {series.__len__()} elements started at:" )
         print( strftime( "%Y-%m-%d %H:%M:%S", gmtime() ) )
         x_len, y_len = self._params.pred_N, self._params.pred_M
@@ -49,7 +48,7 @@ class LstmOwnTransformSampleGenerator:
         last = data.__len__() - y_len + 1
         rnn_x, rnn_y = [], []
         for i in range(x_len, last):
-            self._last_used_transform = copy.deepcopy( self.clean_transform_instance )
+            self._last_used_transform = copy.deepcopy(self.clean_transform_instance)
             sequence_to_transform = data.loc[i-x_len: i+y_len-1]
             trans_res = self._last_used_transform.transform(sequence_to_transform)
             rnn_x.append(trans_res.loc[: x_len-1].values.astype(np.float32))
@@ -65,7 +64,7 @@ class LstmOwnTransformSampleGenerator:
         print( strftime( "%Y-%m-%d %H:%M:%S", gmtime() ) )
         return rnn_x, rnn_y
 
-    def generate_nn_input_X(self, array: np.array) -> [np.ndarray, np.array]:
+    def generate_nn_input_X(self, array: np.array) -> (np.ndarray, np.array):
         self._last_used_transform = copy.deepcopy( self.clean_transform_instance )
         as_array_x = self._last_used_transform.transform(pd.Series(array)).values
         input_x = [as_array_x.copy()]
@@ -102,5 +101,3 @@ class LstmOwnTransformSampleGenerator:
 
         pass
         # todo
-
-

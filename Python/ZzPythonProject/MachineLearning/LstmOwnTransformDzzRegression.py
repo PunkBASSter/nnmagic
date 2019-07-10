@@ -1,22 +1,23 @@
 import cntk.tests.test_utils
 from matplotlib import pyplot as plt
-from Common.ModelParameters import ModelParameters
-from SampleGenerators.LstmOwnTransformSampleGenerator import LstmOwnTransformSampleGenerator
+from LstmOwnTransformDzzRegressionParameters import LstmOwnTransformDzzRegressionParameters
+from LstmOwnTransformSampleGenerator import LstmOwnTransformSampleGenerator
 from ModelEvaluator import ModelEvaluator
 from ModelTrainer import ModelTrainer
-from DataTransforms.DivisionTransform import *
-from DataTransforms.BoxCoxTransform import *
-from DataTransforms.DiffTransform import *
-from DataTransforms.LogTransform import *
-from DataTransforms.ValueShiftTransform import *
-from DataTransforms.ValueScaleTransform import *
-from DataTransforms.ChainedTransform import *
-from DataTransforms.TrimNanLeftTransform import *
+from DivisionTransform import DivisionTransform
+from BoxCoxTransform import BoxCoxTransform
+from DiffTransform import DiffTransform
+from LogTransform import LogTransform
+from ValueShiftTransform import ValueShiftTransform
+from ValueScaleTransform import ValueScaleTransform
+from ChainedTransform import ChainedTransform
+from TrimNanLeftTransform import TrimNanLeftTransform
 import numpy as np
+import pandas as pd
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
-params = ModelParameters()
+params = LstmOwnTransformDzzRegressionParameters()
 N = params.pred_N
 M = params.pred_M
 box_cox_transform = BoxCoxTransform()
@@ -64,7 +65,7 @@ for j, sample in enumerate( ["train", "val", "test"] ):
 plt.show()
 
 #EVALUATION
-eval_res = evaluator.evaluate(smp_x["test"])
+#eval_res = evaluator.evaluate(smp_x["test"])
 test_series = sample_generator.test_sample_series #Should be initialized after sample generation :)
 test_x, original_y = sample_generator.generate_test_input_sequences(test_series)
 interp_results = []
@@ -100,7 +101,6 @@ plt.show()
 
 #TODO 4) Implement SINE sign extraction transform
 #TODO 5) USE Validation sample by Trainer during training
-#TODO 6) NaN trimming transform
 
 #todo reconsider loss calculation
 print("end")

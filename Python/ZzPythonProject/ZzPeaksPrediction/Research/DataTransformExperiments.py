@@ -1,21 +1,13 @@
-import cntk.tests.test_utils
 import pandas as pd
-import numpy as np
-from cntk.ops.functions import load_model
 from matplotlib import pyplot as plt
-from Common.ModelParameters import ModelParameters
-from SampleGenerators.LstmSampleGenerator import LstmSampleGenerator
-from Models.ModelEvaluator import ModelEvaluator
-from Models.ModelTrainer import ModelTrainer
-from DataTransforms.TransformBase import TransformBase, TransformParams
-from DataTransforms.DivisionTransform import DivisionTransform, DivisionTransformParams
-from DataTransforms.BoxCoxTransform import BoxCoxTransform, BoxCoxTransformParams
-from DataTransforms.DiffTransform import DiffTransform, DiffTransformParams
-from DataTransforms.LogTransform import LogTransform, LogTransformParams
-from DataTransforms.ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
-from DataTransforms.ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
-from DataTransforms.ChainedTransform import ChainedTransform
-import HelperFunctions.StatisticsHelperFunctions as shf
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
+from DivisionTransform import DivisionTransform, DivisionTransformParams
+from DiffTransform import DiffTransform, DiffTransformParams
+from LogTransform import LogTransform, LogTransformParams
+from ValueShiftTransform import ValueShiftTransform, ValueShiftTransformParams
+from ValueScaleTransform import ValueScaleTransform, ValueScaleTransformParams
+from ChainedTransform import ChainedTransform
+import StatisticsHelperFunctions as shf
 
 params = ModelParameters()
 

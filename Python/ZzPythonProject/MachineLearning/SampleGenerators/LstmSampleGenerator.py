@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import DataFrameHelperFunctions as dfhf
-from DataTransforms.TransformBase import TransformBase
-from Common.ModelParameters import ModelParameters
+from Transforms.TransformBase import TransformBase
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
 import copy
 
 

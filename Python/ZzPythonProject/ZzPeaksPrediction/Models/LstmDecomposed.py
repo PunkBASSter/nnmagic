@@ -1,18 +1,17 @@
 import cntk.tests.test_utils
-from cntk.ops.functions import load_model
 from matplotlib import pyplot as plt
-from Common.ModelParameters import ModelParameters
-from SampleGenerators.LstmSampleGenerator import LstmSampleGenerator
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
+from LstmSampleGenerator import LstmSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
-from Models.ModelTrainer import ModelTrainer
-from DataTransforms.DivisionTransform import DivisionTransform
-from DataTransforms.BoxCoxTransform import BoxCoxTransform
-from DataTransforms.DiffTransform import DiffTransform
-from DataTransforms.LogTransform import LogTransform
-from DataTransforms.ValueShiftTransform import ValueShiftTransform
-from DataTransforms.ValueScaleTransform import ValueScaleTransform
+from ModelTrainer import ModelTrainer
+from DivisionTransform import DivisionTransform
+from BoxCoxTransform import BoxCoxTransform
+from DiffTransform import DiffTransform
+from LogTransform import LogTransform
+from ValueShiftTransform import ValueShiftTransform
+from ValueScaleTransform import ValueScaleTransform
 import pandas as pd
-from DataTransforms.ChainedTransform import ChainedTransform
+from ChainedTransform import ChainedTransform
 
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 

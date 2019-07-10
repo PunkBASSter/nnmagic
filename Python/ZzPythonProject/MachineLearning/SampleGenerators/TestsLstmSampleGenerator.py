@@ -1,10 +1,9 @@
 import unittest
-import pytest
 import pandas as pd
 import numpy as np
 from SampleGenerators.LstmSampleGenerator import LstmSampleGenerator
-from Common.ModelParameters import ModelParameters
-from DataTransforms.TransformBase import TransformBase
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
+from Transforms.TransformBase import TransformBase
 
 
 class TestLstmSampleGenerator(unittest.TestCase):

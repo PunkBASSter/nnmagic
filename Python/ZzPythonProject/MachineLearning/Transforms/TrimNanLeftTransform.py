@@ -1,4 +1,4 @@
-from DataTransforms.LeftShiftedTransformBase import *
+from Transforms.LeftShiftedTransformBase import *
 
 #TODO TESTS!!!
 class TrimNanLeftTransform(LeftShiftedTransformBase):

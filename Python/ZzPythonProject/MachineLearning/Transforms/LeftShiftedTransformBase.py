@@ -1,5 +1,5 @@
 import math
-from DataTransforms.TransformBase import *
+from Transforms.TransformBase import *
 
 
 class LeftShiftedTransformBase(TransformBase):

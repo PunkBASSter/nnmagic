@@ -1,4 +1,4 @@
-class ModelParameters:
+class LstmOwnTransformDzzRegressionParameters:
 
     def __init__(self):
         # Files and folders IO params

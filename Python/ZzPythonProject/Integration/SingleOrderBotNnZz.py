@@ -4,7 +4,6 @@ from Integration.MTxPyBotBase import OrderModel
 from Integration.MTxPyBotBase import MTxPyBotBase
 from MTxPyDeltaZigZag import MTxPyDeltaZigZag
 from ZzPredictionIndicator import ZzPredictionIndicator
-from ZzPeaksPrediction.Common.ModelParameters import ModelParameters
 import Mt5PipeConnector.PipeServer as pipe
 
 class SingleOrderBot(MTxPyBotBase):

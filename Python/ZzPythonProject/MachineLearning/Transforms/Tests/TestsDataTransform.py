@@ -2,14 +2,14 @@ import unittest
 import pandas as pd
 import numpy as np
 import math
-from DataTransforms.TransformBase import TransformBase
-from DataTransforms.BoxCoxTransform import BoxCoxTransform
-from DataTransforms.DiffTransform import DiffTransform
-from DataTransforms.DivisionTransform import DivisionTransform
-from DataTransforms.LogTransform import LogTransform
-from DataTransforms.ValueShiftTransform import ValueShiftTransform
-from DataTransforms.ValueScaleTransform import ValueScaleTransform
-from DataTransforms.ChainedTransform import ChainedTransform
+from Transforms.TransformBase import TransformBase
+from Transforms.BoxCoxTransform import BoxCoxTransform
+from Transforms.DiffTransform import DiffTransform
+from Transforms.DivisionTransform import DivisionTransform
+from Transforms.LogTransform import LogTransform
+from Transforms.ValueShiftTransform import ValueShiftTransform
+from Transforms.ValueScaleTransform import ValueScaleTransform
+from Transforms.ChainedTransform import ChainedTransform
 
 
 class TestsDataTransform(unittest.TestCase):

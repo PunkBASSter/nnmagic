@@ -1,5 +1,5 @@
 import numpy as np
-from DataTransforms.LeftShiftedTransformBase import *
+from Transforms.LeftShiftedTransformBase import *
 
 
 class DivisionTransform(LeftShiftedTransformBase):

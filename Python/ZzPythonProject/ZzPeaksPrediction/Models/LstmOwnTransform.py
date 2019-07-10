@@ -1,22 +1,19 @@
 import cntk.tests.test_utils
-from cntk.ops.functions import load_model
 from matplotlib import pyplot as plt
-from Common.ModelParameters import ModelParameters
-from SampleGenerators.LstmOwnTransformSampleGenerator import LstmOwnTransformSampleGenerator
+from LstmOwnTransformDzzRegressionParameters import ModelParameters
+from LstmOwnTransformSampleGenerator import LstmOwnTransformSampleGenerator
 from Models.ModelEvaluator import ModelEvaluator
-from Models.ModelTrainer import ModelTrainer
-from DataTransforms.DivisionTransform import *
-from DataTransforms.BoxCoxTransform import *
-from DataTransforms.DiffTransform import *
-from DataTransforms.LogTransform import *
-from DataTransforms.ValueShiftTransform import *
-from DataTransforms.ValueScaleTransform import *
-import pandas as pd
-from DataTransforms.ChainedTransform import *
-from DataTransforms.TrimNanLeftTransform import *
-import copy
+from ModelTrainer import ModelTrainer
+from DivisionTransform import *
+from BoxCoxTransform import *
+from DiffTransform import *
+from LogTransform import *
+from ValueShiftTransform import *
+from ValueScaleTransform import *
+from ChainedTransform import *
+from TrimNanLeftTransform import *
 import numpy as np
-from HelperFunctions import DataFrameHelperFunctions as dfhf
+
 cntk.tests.test_utils.set_device_from_pytest_env() # (only needed for our build system)
 
 params = ModelParameters()
@@ -48,10 +45,14 @@ trainer.train(smp_x["train"], smp_y["train"])
 trainer.load_model()
 z = trainer._z
 
+
 def print_mse(samples_to_process):
     for labeltxt in samples_to_process:
         print("mse for {}: {:.6f}".format(labeltxt, trainer.get_mse(smp_x[labeltxt], smp_y[labeltxt])))
+
+
 print_mse(["train", "val", "test"])
+
 
 evaluator = ModelEvaluator(z, params)
 f, a = plt.subplots(3, 1, figsize=(12, 8))
