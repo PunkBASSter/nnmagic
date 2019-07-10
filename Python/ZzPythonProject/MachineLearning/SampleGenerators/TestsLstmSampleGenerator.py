@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 from SampleGenerators.LstmSampleGenerator import LstmSampleGenerator
 from Common.ModelParameters import ModelParameters
-from DataTransforms.TransformBase import TransformBase, TransformParams
+from DataTransforms.TransformBase import TransformBase
+
 
 class TestLstmSampleGenerator(unittest.TestCase):
 
@@ -20,7 +21,7 @@ class TestLstmSampleGenerator(unittest.TestCase):
         model_params = ModelParameters()
         model_params.pred_N = 2
         model_params.pred_M = 1
-        transform = TransformBase(TransformParams()) if not transform else transform
+        transform = TransformBase() if not transform else transform
         return LstmSampleGenerator(model_params, transform)
 
     def test_repack_data_returned_type(self):

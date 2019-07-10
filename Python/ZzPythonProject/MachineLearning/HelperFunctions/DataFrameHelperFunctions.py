@@ -5,7 +5,7 @@ df_normalized_column = "Normalized"
 df_predicted_column = "Predicted"
 
 
-def add_list_to_source_df_padding_overlapping(dataframe, lst, N):
+def add_list_to_source_df_padding_overlapping(dataframe :pd.DataFrame, lst: [], N: int) -> ():
     """As the DFs are splitted with overlapping and results array differ in length, we put N padded elements
     before predicted to fill the gap impeding DF creation."""
     padding = dataframe[df_normalized_column].tolist()[0:N]
@@ -13,11 +13,8 @@ def add_list_to_source_df_padding_overlapping(dataframe, lst, N):
     padded_lst.extend(lst)
 
     dataframe[df_predicted_column] = pd.Series(padded_lst, dataframe.index)
-
     actual_predicted_start_timestamp = dataframe.index[N]
-
     return dataframe, actual_predicted_start_timestamp
-
 
 
 def split_df_by_number(dataframe, val_start, test_start, N, M, train_offset = 2):
@@ -34,11 +31,9 @@ def split_df_by_number(dataframe, val_start, test_start, N, M, train_offset = 2)
 
 
 def split_df_by_size(dataframe, val_size, test_size, N, M ):
-
     total = len(dataframe.index)
     pos_test = int(total * (1 - test_size))
     pos_val = int(pos_test * (1 - val_size))
-
     return split_df_by_number(dataframe, pos_val, pos_test, N, M)
 
 

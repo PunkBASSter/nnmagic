@@ -10,7 +10,7 @@ class ChainedTransform(TransformBase):
         for arg in args:
             self._transformation_sequence.append(arg)
 
-    def transform(self, series):
+    def transform(self, series: pd.Series) -> pd.Series:
         series = pd.Series(series.values)
         length = len(self._transformation_sequence)
         if length < 2: raise ValueError("Sequence must contain at least 2 elements.")
@@ -21,7 +21,7 @@ class ChainedTransform(TransformBase):
 
         return res
 
-    def inv_transform(self, series):
+    def inv_transform(self, series: pd.Series) -> pd.Series:
         length = len(self._transformation_sequence)
         if length < 2: raise ValueError("Sequence must contain at least 2 elements.")
 

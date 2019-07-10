@@ -10,7 +10,6 @@ class ModelEvaluator:
     _last_result = None
     _evaluator = None
 
-
     def __init__(self, model, params):
         self._params = params
         self._z = model

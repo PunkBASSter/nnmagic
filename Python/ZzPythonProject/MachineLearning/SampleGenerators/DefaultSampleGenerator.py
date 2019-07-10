@@ -1,5 +1,5 @@
 import pandas as pd
-import HelperFunctions.DataFrameHelperFunctions as dfhf
+import DataFrameHelperFunctions as dfhf
 from Normalizers.Normalizer import Normalizer
 from Common.ModelParameters import ModelParameters
 
