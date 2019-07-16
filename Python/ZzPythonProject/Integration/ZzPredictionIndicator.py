@@ -15,3 +15,6 @@ class ZzPredictionIndicator(MTxPyIndicatorBase):
     def _calculate_internal(self, symbol, period, df: pd.DataFrame):
 
         return self.calculated_data
+
+    def check_training_required(self) -> bool:
+        return False
