@@ -15,9 +15,9 @@ class MTxPyIndicatorBase:
         self.last_calculated = {}
         self.is_offline = offline
         self.calculate = self._calc_offline if offline else self._calc_live
-        self.calculated_data_offline = None
+        self.calculated_data_offline = None #stores the all data in offline mode, actual at the moment is moved to self.calculated_data
 
-    def initialize(self):
+    def initialize(self, offline = False):
         source_data_container = self.data_source.get_source_container()
         for symbol in self.symbol_periods:
             self.last_calculated[symbol] = {}
@@ -28,7 +28,9 @@ class MTxPyIndicatorBase:
                 self.calculated_data[symbol][period] = padding
                 self.calculated_data = self._calculate_internal(symbol, period, source_data_container[symbol][period])
 
+        self.is_offline = offline
         if self.is_offline:
+            self.calculate = self._calc_offline if offline else self._calc_live
             self.calculated_data_offline = copy.deepcopy(self.calculated_data)
 
     def _calc_live(self, symbol: str, period: int, timestamp: int) -> SymbolPeriodTimeContainer:
@@ -64,3 +66,13 @@ class MTxPyIndicatorBase:
 
     def get_source_container(self) -> SymbolPeriodTimeContainer:
         return self.calculated_data
+
+    def export_to_csv(self, file_path, file_name_pattern):
+        for item in self.symbol_periods.items():
+            current_df = self.calculated_data_offline[item[0]][item[1]]
+            fname = f"{file_path}\\{file_name_pattern}_{item[0]}_{item[1]}.csv"
+            current_df.to_csv(fname)
+
+    def initialize_from_csv(self, sym_tf_path):
+        self.is_offline = True
+        pass
