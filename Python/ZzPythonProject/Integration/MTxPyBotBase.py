@@ -6,6 +6,7 @@ from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 FLOAT_CMP_PRECISION = 0.00001
 
 BOT_STATE_INIT = "INIT"
+BOT_STATE_INIT_OFFLINE = "INIT_OFFLINE"
 BOT_STATE_INIT_COMPLETE = "INIT_COMPLETE"
 BOT_STATE_TICK = "TICK"
 BOT_STATE_ORDERS = "ORDERS"
@@ -96,6 +97,7 @@ class MTxPyBotBase:
         self._state = BOT_STATE_INIT
         self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
         self.indicators = indicators if indicators else pd.DataFrame(index=["symbol","timeframe"])
+        self.is_offline = False
 
     def process_json_data(self, data_updates: str) -> str:
         """Callback handling pipe updates as JSON string containing mandatory 'state' object and optional data."""
@@ -108,7 +110,16 @@ class MTxPyBotBase:
             self._timeframe = json_dict["timeframe"]
             df = pd.DataFrame(json_dict["rates"])
             df.set_index("timestamp",inplace=True)
-            self._rates.add_values_with_key_check(self._symbol, self._timeframe,df)
+            self._rates.add_values_with_key_check(self._symbol, self._timeframe, df)
+            return RESULT_SUCCESS
+
+        if self._state == BOT_STATE_INIT_OFFLINE:
+            self._symbol = json_dict["symbol"]
+            self._timeframe = json_dict["timeframe"]
+            csv_path = json_dict["csv_path"] #TODO ADD TO CONTRACT AND ON MQL4 SIDE
+            df = pd.read_csv(csv_path, index_col="timestamp")
+            self._rates.add_values_with_key_check(self._symbol, self._timeframe, df)
+            self.is_offline = True
             return RESULT_SUCCESS
 
         if self._state == BOT_STATE_INIT_COMPLETE:
@@ -162,7 +173,7 @@ class MTxPyBotBase:
 
     def _init_indicators(self):
         for ind in self.indicators:
-            ind.initialize()
+            ind.initialize(self.is_offline)
 
     def _recalculate_indicators(self, symbol, timeframe, timestamp):
         for ind in self.indicators:
