@@ -40,6 +40,9 @@ venv/
 .ipynb_checkpoints*/
 /Python/ZzPythonProject/WrtMarketResearch/ResultData/*.csv
 /Python/ZzPythonProject/WrtMarketResearch/Probability_Body_Range_RangeUp_RangeDn_Gaps.zip
+Python/ZzPythonProject/Integration/DataFolder/
+
+
 
 #MQL4-5 Ignore Section
 *.ex4
@@ -58,10 +61,3 @@ MQL4/Libraries/*
 MQL4/Logs/*
 MQL4/Scripts/*
 !MQL4/Scripts/PunkBASSter/
-
-
-
-
-
-
-
