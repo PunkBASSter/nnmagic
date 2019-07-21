@@ -16,12 +16,12 @@ class SingleOrderBot(MTxPyBotBase):
         super().__init__(magic_number, [self.zigzag])
         self.remove_opposite_orders = remove_opposite_orders
 
-    def on_init_complete_handler(self):
+    def initialize(self):
         self.zigzag = MTxPyDeltaZigZag(self, self.symbol, self.timeframe, self.zz_depth)
         self.indicators = [self.zigzag]
         return bb.RESULT_SUCCESS
 
-    def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
+    def on_tick(self, symbol: str, timeframe: int) -> pd.DataFrame:
         orders = self._active_orders
         orders = orders[orders.symbol == symbol]
         buy_positions = orders[orders.command == bb.OP_BUY]
@@ -91,7 +91,7 @@ class SingleOrderBot(MTxPyBotBase):
                               expiration_date=0)
         return None
 
-    def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
+    def on_orders_changed(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
         pass
 
 

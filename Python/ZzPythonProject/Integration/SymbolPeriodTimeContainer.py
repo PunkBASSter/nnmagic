@@ -26,7 +26,7 @@ class SymbolPeriodTimeContainer:
         """timestamp_df MUST have index column 'timestamp'. Supposed to be used for realtime updates(on_tick)."""
         df = self._symbol_tfs_dfs[symbol][period]
         prev_len = df.__len__()
-        self._symbol_tfs_dfs[symbol][period]=timestamp_df.combine_first(df)
+        self._symbol_tfs_dfs[symbol][period] = timestamp_df.combine_first(df)
         return prev_len - self._symbol_tfs_dfs[symbol][period].__len__()
 
     def get_values(self, symbol: str, period: int) -> pd.DataFrame:
@@ -38,9 +38,15 @@ class SymbolPeriodTimeContainer:
     def get_values_since(self, symbol: str, period: int, timestamp: int) -> pd.DataFrame:
         return self._symbol_tfs_dfs[symbol][period].loc[timestamp:]
 
+    def get_last_timestamp(self, symbol, period):
+        return self._symbol_tfs_dfs[symbol][period].tail(1).index.values[0]
+
+    def get_first_timestamp(self, symbol, period):
+        return self._symbol_tfs_dfs[symbol][period].head(1).index.values[0]
+
     def extend_data(self, symbol: str, period: int, df_update: pd.DataFrame) -> pd.DataFrame:
         df = self._symbol_tfs_dfs[symbol][period]
-        df = df.append(df_update)
+        df = df.combine_first(df_update)
         self._symbol_tfs_dfs[symbol][period] = df
         return df
 

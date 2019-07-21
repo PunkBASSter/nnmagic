@@ -1,11 +1,12 @@
 import json
 import pandas as pd
 import Mt5PipeConnector.PipeServer as pipe
-from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
+from MTxPyDataSource import MTxPyDataSource
 
 FLOAT_CMP_PRECISION = 0.00001
 
 BOT_STATE_INIT = "INIT"
+BOT_STATE_INIT_TRAINING = "INIT_TRAINING"
 BOT_STATE_INIT_OFFLINE = "INIT_OFFLINE"
 BOT_STATE_INIT_COMPLETE = "INIT_COMPLETE"
 BOT_STATE_TICK = "TICK"
@@ -13,6 +14,7 @@ BOT_STATE_ORDERS = "ORDERS"
 BOT_STATE_ORDERS_HISTORY = "ORDERS_HISTORY"
 RESULT_SUCCESS = "OK"
 RESULT_ERROR = "ERROR"
+RESULT_EXIT = "EXIT"
 
 OP_BUY = 0
 OP_SELL = 1
@@ -85,109 +87,104 @@ class OrderModel:
         return 0
 
 
-class MTxPyBotBase:
+class MTxPyBotBase(MTxPyDataSource):
     """Encapsulates basic API calls and structure of MT bot business logic."""
 
-    def __init__(self, magic_number: int, indicators=None, only_new_bars=False):
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, state: str) -> None:
+        self._state = state
+
+    def __init__(self, magic_number: int, only_new_bars=False):
+        super().__init__()
         self._symbol = None
         self._timeframe = None
         self.magic_number = magic_number
         self._only_new_bars = only_new_bars
-        self._rates = SymbolPeriodTimeContainer()
-        self._state = BOT_STATE_INIT
+        self._state = ""
         self._active_orders = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
-        self.indicators = indicators if indicators else pd.DataFrame(index=["symbol","timeframe"])
         self.is_offline = False
 
     def process_json_data(self, data_updates: str) -> str:
         """Callback handling pipe updates as JSON string containing mandatory 'state' object and optional data."""
         json_dict = json.loads(data_updates)
-        self._state = json_dict["state"]
+        self.state = json_dict["state"]
 
-        #try:
-        if self._state == BOT_STATE_INIT:
+        if self.state == BOT_STATE_INIT:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
             df = pd.DataFrame(json_dict["rates"])
             df.set_index("timestamp",inplace=True)
-            self._rates.add_values_with_key_check(self._symbol, self._timeframe, df)
+            self._data_container.add_values_with_key_check(self._symbol, self._timeframe, df)
+            MTxPyDataSource._global_rates_container = self._data_container
             return RESULT_SUCCESS
 
-        if self._state == BOT_STATE_INIT_OFFLINE:
+        if self.state == BOT_STATE_INIT_TRAINING:
+            MTxPyDataSource._global_rates_container = self._data_container
+            result = self.initialize()
+            self._init_indicators()
+            self.train()
+            #TODO RESET ITERATORS TO RE-INITIALIZE IN LIVE MODE?
+            return result
+
+        if self.state == BOT_STATE_INIT_OFFLINE:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
-            csv_path = json_dict["csv_path"] #TODO ADD TO CONTRACT AND ON MQL4 SIDE
-            df = pd.read_csv(csv_path, index_col="timestamp")
-            self._rates.add_values_with_key_check(self._symbol, self._timeframe, df)
-            self.is_offline = True
             return RESULT_SUCCESS
 
-        if self._state == BOT_STATE_INIT_COMPLETE:
-            result = self.on_init_complete_handler()
+        if self.state == BOT_STATE_INIT_COMPLETE:
+            MTxPyDataSource._global_rates_container = self._data_container
+            result = self.initialize()
             self._init_indicators()
             return result
 
-        if self._state == BOT_STATE_TICK:
+        if self.state == BOT_STATE_TICK:
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
             df = pd.DataFrame(json_dict["rates"])
             df.set_index("timestamp", inplace=True)
-            new_bar_detected = self._rates.add_values_by_existing_key(self._symbol, self._timeframe, df) > 0
+            new_bar_detected = self._data_container.add_values_by_existing_key(self._symbol, self._timeframe, df) > 0
+            MTxPyDataSource._global_rates_container = self._data_container
 
-        #DBG ON TICK PERFORMANCE
-            #if self._active_orders.__len__() == 0:
-            #    on_tick_result.command = OrderModel(command=OP_BUYLIMIT,lots=0.1,open_price=0.001)
-            #else:
-            #    on_tick_result.command = OrderModel(command=OP_REMOVE,ticket=self._active_orders.iloc[0].ticket)
-            #return on_tick_result.to_csv()
-        #/DBG PERF
             last_timestamp = df.tail(1).index.values[0]
             if not self._only_new_bars or new_bar_detected:
                 self._recalculate_indicators(self._symbol, self._timeframe, last_timestamp)
-                on_tick_result = on_tick_result.append(self.on_tick_handler(self._symbol, self._timeframe),
+                on_tick_result = on_tick_result.append(self.on_tick(self._symbol, self._timeframe),
                                                        ignore_index=False)
             res = on_tick_result.to_csv()
             return res
 
-        if self._state == BOT_STATE_ORDERS:
+        if self.state == BOT_STATE_ORDERS:
             orders_df = pd.DataFrame(json_dict["orders"], columns=list(OrderModel().__dict__.keys()))
             prev_orders = self._active_orders
             if not orders_df.equals(prev_orders):
-                self.on_orders_changed_handler(prev_orders, orders_df)
+                self.on_orders_changed(prev_orders, orders_df)
             self._active_orders = orders_df
             return RESULT_SUCCESS
 
-        #except Exception as e:
-            #return f'{RESULT_ERROR}_{self._state} {e.__str__()}'
-
         return RESULT_ERROR
 
-    #data_source methods:
-    def get_source_container(self) -> SymbolPeriodTimeContainer:
-        return self._rates
-
-    def calculate(self, symbol, period, timestamp) -> pd.DataFrame:
-        return self._rates[symbol][period]
-    #/data_source methods
-
     def _init_indicators(self):
-        for ind in self.indicators:
+        for ind in self._data_sources.values():
             ind.initialize(self.is_offline)
 
     def _recalculate_indicators(self, symbol, timeframe, timestamp):
-        for ind in self.indicators:
+        for ind in self._data_sources.values():
             ind.calculate(symbol, timeframe, timestamp)
 
-    def on_init_complete_handler(self) -> str:
+    def initialize(self) -> str:
         """Implement initialization of dependencies"""
         return RESULT_SUCCESS
 
-    def on_tick_handler(self, symbol: str, timeframe: int) -> pd.DataFrame:
+    def on_tick(self, symbol: str, timeframe: int) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
-        return self._active_orders#raise NotImplementedError("Abstract method 'on_tick_handler' must be implemented.")
+        return self._active_orders#raise NotImplementedError("Abstract method 'on_tick' must be implemented.")
 
-    def on_orders_changed_handler(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
+    def on_orders_changed(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
         pass
 
     def get_market_orders(self) -> pd.DataFrame:

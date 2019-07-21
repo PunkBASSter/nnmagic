@@ -1,11 +1,10 @@
 import pandas as pd
 import pickle
 
+
 class TransformBase:
 
     def __init__(self, **kwargs):
-        #for key, value in kwargs.items():
-        #    setattr(self, key, value)
         self.__dict__.update(kwargs)
 
     def transform(self, series: pd.Series) -> pd.Series:
@@ -15,7 +14,6 @@ class TransformBase:
         return series
 
     def __repr__(self):
-        # todo implement method
         return f"{type(self)}"
 
     def save_transform(self, path):
