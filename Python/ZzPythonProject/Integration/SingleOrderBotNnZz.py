@@ -3,6 +3,7 @@ import pandas as pd
 from Integration.MTxPyBotBase import OrderModel
 from Integration.MTxPyBotBase import MTxPyBotBase
 from MTxPyDeltaZigZag import MTxPyDeltaZigZag
+from MTxPyDataSource import MTxPyDataSource
 from ZzPredictionIndicator import ZzPredictionIndicator
 import Mt5PipeConnector.PipeServer as pipe
 
@@ -88,7 +89,7 @@ class SingleOrderBot(MTxPyBotBase):
 
 if __name__ == '__main__':
     bot = SingleOrderBot(magic_number=123123, zz_depth=0.005, remove_opposite_orders=False)
-    SingleOrderBot._data_folder = "C:\BitBucket\\nn_experiments\Python\ZzPythonProject\Integration\DataFolder"
+    MTxPyDataSource._data_folder = "C:\BitBucket\\nn_experiments\Python\ZzPythonProject\Integration\DataFolder"
     zigzag = MTxPyDeltaZigZag(symbol="EURUSD", timeframe=60, depth=0.5)
     bot.register_indicator("zigzag",zigzag)
     pipe.pipe_server(bot.process_json_data)

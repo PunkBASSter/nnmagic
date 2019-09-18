@@ -15,7 +15,9 @@ class MTxPyDataSource:
         self.series_names = ["open", "high", "low", "close"]
         self.empty_value = math.nan
         self._data_container = SymbolPeriodTimeContainer()
+        #self._data_container_offline = SymbolPeriodTimeContainer()
         self.is_offline = False
+        self.last_processed = {}
 
     def calculate(self, symbol: str, period: int, timestamp: int) -> pandas.DataFrame:
         pass
@@ -28,29 +30,23 @@ class MTxPyDataSource:
     def indicators(self) -> {}:
         return self._data_sources
 
-    @property
-    def data_file_name(self):
-        name = f"{type(self).__name__}.mtpy"
-        return os.path.join(self._data_folder, name)
+    def get_data_file_name(self, add_suffix):
+        name = f"{type(self).__name__}_{add_suffix}.mtpy"
+        return os.path.join(MTxPyDataSource._data_folder, name)
 
-    def _save_data(self):
-        with open(self.data_file_name, 'wb') as f:
+    def save_data(self, deep=True, add_suffix=""):
+        with open(self.get_data_file_name(add_suffix), 'wb') as f:
             pickle.dump(self._data_container, f)
+        if deep:
+            for data_source in self._data_sources.values():
+                data_source.save_data()
 
-    def save_data(self):
-        self._save_data()
-        for data_source in self._data_sources.values():
-            data_source.save_data()
-
-    def _load_data(self):
-        self._load_data()
-        with open(self.data_file_name, 'rb') as f:
-            self._data_container = pickle.load(f)
-
-    def load_data(self):
-        for data_source in self._data_sources.values():
-            data_source.load_data()
-        self._load_data()
+    def load_data(self, deep=True, add_suffix=""):
+        if deep:
+            for data_source in self._data_sources.values():
+                data_source.load_data()
+        with open(self.get_data_file_name(add_suffix), 'rb') as f:
+            self._data_container_offline = pickle.load(f)
 
     def register_indicator(self, name: str, ind_obj):
         self._data_sources[name] = ind_obj
@@ -64,5 +60,5 @@ class MTxPyDataSource:
 
     def train(self):
         self._train()
-        for ind in self._data_sources.items():
-            ind[1].train()
+        for ind in self._data_sources.values():
+            ind.train()

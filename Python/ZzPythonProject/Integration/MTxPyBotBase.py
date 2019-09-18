@@ -9,6 +9,7 @@ BOT_STATE_INIT = "INIT"
 BOT_STATE_INIT_TRAINING = "INIT_TRAINING"
 BOT_STATE_INIT_OFFLINE = "INIT_OFFLINE"
 BOT_STATE_INIT_COMPLETE = "INIT_COMPLETE"
+BOT_STATE_SAVE_DATA = "SAVE_DATA"
 BOT_STATE_TICK = "TICK"
 BOT_STATE_ORDERS = "ORDERS"
 BOT_STATE_ORDERS_HISTORY = "ORDERS_HISTORY"
@@ -74,7 +75,7 @@ class OrderModel:
                      & (abs(orders.take_profit - self.take_profit) < FLOAT_CMP_PRECISION)
                      & (abs(orders.lots - self.lots) < FLOAT_CMP_PRECISION)
                      & (orders.expiration_date == self.expiration_date)
-                     & (orders.command % 2 == self.command % 2) #ODD for BUY and EVEN for SELL
+                     & (orders.command % 2 == self.command % 2)  # ODD for BUY and EVEN for SELL
                      & (OP_BUY <= orders.command)
                      & (orders.command <= OP_SELLSTOP)]
 
@@ -95,10 +96,10 @@ class MTxPyBotBase(MTxPyDataSource):
         return self._state
 
     @state.setter
-    def state(self, state: str) -> None:
+    def state(self, state: str):
         self._state = state
 
-    def __init__(self, magic_number: int, only_new_bars=False):
+    def __init__(self, magic_number: int, only_new_bars=True):
         super().__init__()
         self._symbol = None
         self._timeframe = None
@@ -117,7 +118,7 @@ class MTxPyBotBase(MTxPyDataSource):
             self._symbol = json_dict["symbol"]
             self._timeframe = json_dict["timeframe"]
             df = pd.DataFrame(json_dict["rates"])
-            df.set_index("timestamp",inplace=True)
+            df.set_index("timestamp", inplace=True)
             self._data_container.add_values_with_key_check(self._symbol, self._timeframe, df)
             MTxPyDataSource._global_rates_container = self._data_container
             return RESULT_SUCCESS
@@ -126,16 +127,24 @@ class MTxPyBotBase(MTxPyDataSource):
             MTxPyDataSource._global_rates_container = self._data_container
             result = self.initialize()
             self._init_indicators()
+            # self.save_data()
+            self.is_offline = True
             self.train()
-            #TODO RESET ITERATORS TO RE-INITIALIZE IN LIVE MODE?
+            # TODO RESET ITERATORS TO RE-INITIALIZE IN LIVE MODE?
+            # exit(0)
             return result
 
+        if self.state == BOT_STATE_SAVE_DATA:
+            self.save_data()
+            return RESULT_SUCCESS
+
         if self.state == BOT_STATE_INIT_OFFLINE:
-            self._symbol = json_dict["symbol"]
-            self._timeframe = json_dict["timeframe"]
+            self.is_offline = True
             return RESULT_SUCCESS
 
         if self.state == BOT_STATE_INIT_COMPLETE:
+            if self.is_offline:
+                self.load_data()
             MTxPyDataSource._global_rates_container = self._data_container
             result = self.initialize()
             self._init_indicators()
@@ -147,14 +156,20 @@ class MTxPyBotBase(MTxPyDataSource):
             on_tick_result = pd.DataFrame(columns=list(OrderModel().__dict__.keys()))
             df = pd.DataFrame(json_dict["rates"])
             df.set_index("timestamp", inplace=True)
-            new_bar_detected = self._data_container.add_values_by_existing_key(self._symbol, self._timeframe, df) > 0
+            new_bar_detected = self.is_offline or \
+                               self._data_container.add_values_by_existing_key(self._symbol, self._timeframe, df) > 0
             MTxPyDataSource._global_rates_container = self._data_container
 
             last_timestamp = df.tail(1).index.values[0]
+
+            # DBG
+            if last_timestamp == 1488236400:
+                print("LAST_TS_2017_02_27__2300")
+
             if not self._only_new_bars or new_bar_detected:
                 self._recalculate_indicators(self._symbol, self._timeframe, last_timestamp)
                 on_tick_result = on_tick_result.append(self.on_tick(self._symbol, self._timeframe),
-                                                       ignore_index=False)
+                                                       ignore_index=False, sort=False)
             res = on_tick_result.to_csv()
             return res
 
@@ -182,7 +197,7 @@ class MTxPyBotBase(MTxPyDataSource):
 
     def on_tick(self, symbol: str, timeframe: int) -> pd.DataFrame:
         """Implement ON Tick processing (excluding indicator updates). Returns DataFrame with commands(orders)."""
-        return self._active_orders#raise NotImplementedError("Abstract method 'on_tick' must be implemented.")
+        return self._active_orders  # raise NotImplementedError("Abstract method 'on_tick' must be implemented.")
 
     def on_orders_changed(self, orders_before: pd.DataFrame, orders_after: pd.DataFrame):
         pass

@@ -27,7 +27,7 @@ class SymbolPeriodTimeContainer:
         df = self._symbol_tfs_dfs[symbol][period]
         prev_len = df.__len__()
         self._symbol_tfs_dfs[symbol][period] = timestamp_df.combine_first(df)
-        return prev_len - self._symbol_tfs_dfs[symbol][period].__len__()
+        return self._symbol_tfs_dfs[symbol][period].__len__() - prev_len
 
     def get_values(self, symbol: str, period: int) -> pd.DataFrame:
         return self._symbol_tfs_dfs[symbol][period]
