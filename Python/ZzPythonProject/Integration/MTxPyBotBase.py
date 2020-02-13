@@ -131,7 +131,6 @@ class MTxPyBotBase(MTxPyDataSource):
             self.is_offline = True
             self.train()
             # TODO RESET ITERATORS TO RE-INITIALIZE IN LIVE MODE?
-            # exit(0)
             return result
 
         if self.state == BOT_STATE_SAVE_DATA:

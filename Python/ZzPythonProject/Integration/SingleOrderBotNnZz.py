@@ -8,7 +8,7 @@ from ZzPredictionIndicator import ZzPredictionIndicator
 import Mt5PipeConnector.PipeServer as pipe
 
 
-class SingleOrderBot(MTxPyBotBase):
+class SingleOrderBotNnZz(MTxPyBotBase):
 
     def __init__(self, magic_number, zz_depth, remove_opposite_orders):
         self.zz_depth = zz_depth
@@ -88,7 +88,7 @@ class SingleOrderBot(MTxPyBotBase):
 
 
 if __name__ == '__main__':
-    bot = SingleOrderBot(magic_number=123123, zz_depth=0.005, remove_opposite_orders=False)
+    bot = SingleOrderBotNnZz(magic_number=123123, zz_depth=0.005, remove_opposite_orders=False)
     MTxPyDataSource._data_folder = "C:\BitBucket\\nn_experiments\Python\ZzPythonProject\Integration\DataFolder"
     zigzag = MTxPyDeltaZigZag(symbol="EURUSD", timeframe=60, depth=0.5)
     bot.register_indicator("zigzag",zigzag)
