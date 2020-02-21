@@ -1,19 +1,48 @@
 import MetaTrader5 as mt5
 import time
 from BotComponents.Trade import Trade
+from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
+import numpy as np
 
 mt5.initialize()
-#mt5.wait()
 
-dev = 0.00001
 symbol = "EURUSD"
-buy_price = 0
+timeframe = mt5.TIMEFRAME_H1
+tick = mt5.symbol_info_tick(symbol)
 
-mt5.symbol_select(symbol)
+terminal_info = mt5.terminal_info()
 
-time.sleep(1)
-p = mt5.symbol_info_tick(symbol)
-prev_price = p.ask
+#rates_range = mt5.copy_rates_range(symbol, timeframe, 1572230396, 1582238396)
+
+def get_bar_seconds(tf):
+    if tf < mt5.TIMEFRAME_H1:
+        return tf*60
+    if mt5.TIMEFRAME_H1 <= tf < mt5.TIMEFRAME_W1:
+        return (tf - 0x4000)*60*60
+    if tf == mt5.TIMEFRAME_W1:
+        return (tf - 0x8000)*5*24*60*60
+    if tf == mt5.TIMEFRAME_MON1:
+        return (tf - 0xC000)*22*24*60*60
+    return 0
+
+bars = mt5.copy_rates_from(symbol, timeframe, 0, 1)
+bar_time_capacity = get_bar_seconds(timeframe)
+chunk_size = 100
+
+time_window = chunk_size*bar_time_capacity
+current_start_time = bars[0]['time']
+current_end_time = current_start_time + time_window
+while current_end_time < tick.time:
+    res = mt5.copy_rates_range(symbol, timeframe, current_start_time, current_end_time)
+    current_start_time = current_end_time + bar_time_capacity
+    current_end_time = current_start_time + time_window
+    np.append(bars, res)
+
+rates_from = mt5.copy_rates_from(symbol, timeframe, tick.time, terminal_info.maxbars)
+rates_from_pos = mt5.copy_rates_from_pos(symbol, timeframe, 0, 100)
+rates_range = mt5.copy_rates_range(symbol, timeframe, 1582230396, 1582238396)
+rates_range1 = mt5.copy_rates_range(symbol, timeframe, 0, tick.time)
+container = SymbolPeriodTimeContainer()
 
 tr = Trade(123)
 
