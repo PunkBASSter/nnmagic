@@ -25,12 +25,36 @@ def get_bar_seconds(tf):
         return (tf - 0xC000)*22*24*60*60
     return 0
 
+ololo = mt5.copy_rates_range(symbol, timeframe, 1531278000, tick.time)
+ololo2 = mt5.copy_rates_range(symbol, timeframe, 1530918000, 1531278000-1)
+
+#Below method is WORKING!!
+def fetch_history_by_pos(sym, tf):
+    oldest_bar = mt5.copy_rates_from(sym, tf, 0, 1)[0]
+
+    chunk_size = 10000
+    pos = 0
+    res_arr = mt5.copy_rates_from_pos(sym, tf, pos, chunk_size)
+    last_time = res_arr[0]['time']
+    res_copied = res_arr.__len__()
+    pos += chunk_size
+    results = res_arr
+    while (last_time > oldest_bar['time']) and (res_copied == chunk_size):
+        res_arr = mt5.copy_rates_from_pos(sym, tf, pos, chunk_size)
+        last_time = res_arr[0]['time']
+        res_copied = res_arr.__len__()
+        pos += chunk_size
+        results = np.append(res_arr, results)
+    return results
+
+res = fetch_history_by_pos(symbol, timeframe)
+
 def fetch_history(sym, tf):
     last_tick = mt5.symbol_info_tick(sym)
     oldest_bar = mt5.copy_rates_from(sym, tf, 0, 1)[0]
     copy_start_time = last_tick.time
-
-    chunk_size = 100
+    copy_start_time = 1531278000
+    chunk_size = 10000
 
     res_arr = mt5.copy_rates_from(sym, tf, copy_start_time, chunk_size)
     copy_start_time = res_arr[0]['time']
