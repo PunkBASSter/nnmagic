@@ -29,11 +29,10 @@ ololo = mt5.copy_rates_range(symbol, timeframe, 1531278000, tick.time)
 ololo2 = mt5.copy_rates_range(symbol, timeframe, 1530918000, 1531278000-1)
 
 #Below method is WORKING!!
-def fetch_history_by_pos(sym, tf):
+def fetch_history_by_pos(sym, tf, chunk_size=10000):
+    pos = 0
     oldest_bar = mt5.copy_rates_from(sym, tf, 0, 1)[0]
 
-    chunk_size = 10000
-    pos = 0
     res_arr = mt5.copy_rates_from_pos(sym, tf, pos, chunk_size)
     last_time = res_arr[0]['time']
     res_copied = res_arr.__len__()
