@@ -3,6 +3,7 @@ import time
 from BotComponents.Trade import Trade
 from SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 import numpy as np
+import pandas as pd
 
 mt5.initialize()
 
@@ -11,8 +12,8 @@ timeframe = mt5.TIMEFRAME_H1
 tick = mt5.symbol_info_tick(symbol)
 
 terminal_info = mt5.terminal_info()
-
 #rates_range = mt5.copy_rates_range(symbol, timeframe, 1572230396, 1582238396)
+
 
 def get_bar_seconds(tf):
     if tf < mt5.TIMEFRAME_H1:
@@ -28,9 +29,10 @@ def get_bar_seconds(tf):
 ololo = mt5.copy_rates_range(symbol, timeframe, 1531278000, tick.time)
 ololo2 = mt5.copy_rates_range(symbol, timeframe, 1530918000, 1531278000-1)
 
+
 #Below method is WORKING!!
-def fetch_history_by_pos(sym, tf, chunk_size=10000):
-    pos = 0
+def fetch_history_by_pos(sym, tf, start_pos = 1, chunk_size=10000):
+    pos = start_pos
     oldest_bar = mt5.copy_rates_from(sym, tf, 0, 1)[0]
 
     res_arr = mt5.copy_rates_from_pos(sym, tf, pos, chunk_size)
@@ -46,7 +48,9 @@ def fetch_history_by_pos(sym, tf, chunk_size=10000):
         results = np.append(res_arr, results)
     return results
 
+
 res = fetch_history_by_pos(symbol, timeframe)
+res_df = pd.DataFrame(res)
 
 def fetch_history(sym, tf):
     last_tick = mt5.symbol_info_tick(sym)
