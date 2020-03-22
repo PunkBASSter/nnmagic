@@ -51,24 +51,6 @@ def fetch_history_by_pos(sym, tf, start_pos = 1, chunk_size=10000):
 res = fetch_history_by_pos(symbol, timeframe)
 res_df = pd.DataFrame(res)
 
-def fetch_history(sym, tf):
-    last_tick = mt5.symbol_info_tick(sym)
-    oldest_bar = mt5.copy_rates_from(sym, tf, 0, 1)[0]
-    copy_start_time = last_tick.time
-    copy_start_time = 1531278000
-    chunk_size = 10000
-
-    res_arr = mt5.copy_rates_from(sym, tf, copy_start_time, chunk_size)
-    copy_start_time = res_arr[0]['time']
-    results = res_arr
-    while copy_start_time > oldest_bar['time']:
-        arr = mt5.copy_rates_from(sym, tf, copy_start_time, chunk_size)
-        copy_start_time = arr[0]['time'] - 10 #exclude overlapping
-        results = np.append(arr, results)
-    return results
-
-res = fetch_history(symbol, timeframe)
-
 bars = mt5.copy_rates_from(symbol, timeframe, 0, 1)
 bar_time_capacity = get_bar_seconds(timeframe)
 chunk_size = 100
@@ -81,9 +63,6 @@ while current_end_time < tick.time:
     current_start_time = current_end_time + bar_time_capacity
     current_end_time = current_start_time + time_window
     np.append(bars, res)
-
-
-
 
 
 rates_from = mt5.copy_rates_from(symbol, timeframe, tick.time, terminal_info.maxbars)
