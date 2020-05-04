@@ -41,7 +41,7 @@ venv/
 /Python/ZzPythonProject/WrtMarketResearch/ResultData/*.csv
 /Python/ZzPythonProject/WrtMarketResearch/Probability_Body_Range_RangeUp_RangeDn_Gaps.zip
 Python/ZzPythonProject/Integration/DataFolder/
-
+.vscode*/
 
 
 #MQL4-5 Ignore Section
@@ -61,3 +61,5 @@ MQL4/Libraries/*
 MQL4/Logs/*
 MQL4/Scripts/*
 !MQL4/Scripts/PunkBASSter/
+
+
