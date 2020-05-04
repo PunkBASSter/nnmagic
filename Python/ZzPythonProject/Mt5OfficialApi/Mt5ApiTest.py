@@ -22,7 +22,7 @@ def get_bar_seconds(tf):
         return (tf - 0x4000)*60*60
     if tf == mt5.TIMEFRAME_W1:
         return (tf - 0x8000)*5*24*60*60
-    if tf == mt5.TIMEFRAME_MON1:
+    if tf == mt5.TIMEFRAME_MN1:
         return (tf - 0xC000)*22*24*60*60
     return 0
 
