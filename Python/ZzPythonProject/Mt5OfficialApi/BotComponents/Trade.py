@@ -1,4 +1,4 @@
-import MetaTrader5 as mt5
+import pymt5adapter as mt5
 
 
 class Trade:

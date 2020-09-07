@@ -1,11 +1,24 @@
-import MetaTrader5 as mt5
+import pymt5adapter as mt5
 import time
 from BotComponents.Trade import Trade
-from ZzPythonProject.Integration.SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
+from Integration.SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 import numpy as np
 import pandas as pd
 
-mt5.initialize()
+mt5_connected = mt5.connected(
+            path=r'C:\Users\user\Desktop\MT5\terminal64.exe',
+            portable=True,
+            server='MetaQuotes-Demo',
+            login=1234567,
+            password='password1',
+            timeout=5000,
+            #logger=logger,  # default is None
+            ensure_trade_enabled=True,  # default is False
+            enable_real_trading=False,  # default is False
+            raise_on_errors=True,  # default is False
+            return_as_dict=False,  # default is False
+            return_as_native_python_objects=False,  # default is False
+        )
 
 symbol = "EURUSD"
 timeframe = mt5.TIMEFRAME_H1

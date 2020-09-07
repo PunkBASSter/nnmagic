@@ -1,7 +1,7 @@
 import MetaTrader5 as mt5
 import time
 from BotComponents.Trade import Trade
-from ZzPythonProject.Integration.SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
+from Integration.SymbolPeriodTimeContainer import SymbolPeriodTimeContainer
 import numpy as np
 import pandas as pd
 

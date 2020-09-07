@@ -32,7 +32,7 @@ class DataSourceBase:
 
     def get_data_file_name(self, add_suffix):
         name = f"{type(self).__name__}_{add_suffix}.mtpy"
-        return os.path.join(MTxPyDataSource._data_folder, name)
+        return os.path.join(DataSourceBase._data_folder, name)
 
     def save_data(self, deep=True, add_suffix=""):
         with open(self.get_data_file_name(add_suffix), 'wb') as f:
