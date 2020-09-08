@@ -77,4 +77,3 @@ webencodings==0.5.1
 widgetsnbextension==3.4.2
 wincertstore==0.2
 yappi==1.0
-ZigZag==0.2.2
