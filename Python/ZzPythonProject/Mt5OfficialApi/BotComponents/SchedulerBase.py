@@ -4,11 +4,11 @@ import logging
 logger = mt5.get_logger(path_to_logfile='my_mt5_log.log', loglevel=logging.DEBUG, time_utc=True)
 
 mt5_connected = mt5.connected(
-            path=r'C:\Users\user\Desktop\MT5\terminal64.exe',
+            path=r'C:\MetaTrader 5\terminal64.exe',
             portable=True,
             server='MetaQuotes-Demo',
-            login=1234567,
-            password='password1',
+            #login=1234567,
+            #password='password1',
             timeout=5000,
             logger=logger,  # default is None
             ensure_trade_enabled=True,  # default is False
@@ -18,14 +18,17 @@ mt5_connected = mt5.connected(
             return_as_native_python_objects=False,  # default is False
         )
 
+
 class SchedulerBase:
     mt_instance = None
+    bot_instance = None
 
-    def __init__(self, mt5_connected):
+    def __init__(self, mt5instance):
+        self.mt_instance = mt5instance
 
-        with mt5_connected as conn:
+    def run(self):
+        with self.mt_instance as conn:
             try:
-                mt5.
                 num_orders = mt5.history_orders_total("invalid", "arguments")
             except mt5.MT5Error as e:
                 print("We modified the API to throw exceptions for all functions.")

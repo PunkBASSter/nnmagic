@@ -6,7 +6,7 @@ import Utils
 class BotBase:
     _symbol_periods: {}
 
-    def __init__(self,symbol_periods :{}, indicators: []):
+    def __init__(self, symbol_periods :{}, indicators: []):
         self.indicators = indicators
         self._symbol_periods = symbol_periods
 
