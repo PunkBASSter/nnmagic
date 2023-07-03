@@ -1,5 +1,5 @@
-# Several trading bots and utility scripts in Python integrated with MetaTrader 5#
-Note: this was developed before MetaTrader 5 got the official Python interop support. Most of the projects are obsolete since 2019.
+# A mix of trading hypothesis testing, ML models training, utility scripts and bots in Python integrated with MetaTrader 5 #
+Note: Integration between Python and MT5 was developed before MetaTrader 5 got the official Python interop support. Most of the projects are obsolete since 2019, many have theit uselessness confirmed :)
 
 ### Python-MetaTrader integration via named pipes ###
 MT Side: MQL4/Experts/PunkBASSter/Mt4BotApi/Mt4BotApi.mq4 - a standard MT expert advisor handling new data events in MT resending it to the Python code and listening for the orders to send.
